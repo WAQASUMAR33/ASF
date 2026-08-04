@@ -87,7 +87,7 @@ export default function LoginPage() {
       sx={{
         minHeight: '100vh',
         width: '100vw',
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('/airport-bg.jpg')`,
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('/Karachi_Jinnah_Airport.jpg')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center center',
         backgroundRepeat: 'no-repeat',
@@ -117,7 +117,7 @@ export default function LoginPage() {
             md={6.5}
             sx={{
               position: 'relative',
-              backgroundImage: `linear-gradient(rgba(20, 56, 32, 0.88), rgba(15, 42, 24, 0.94)), url('/airport-bg.jpg')`,
+              backgroundImage: `linear-gradient(rgba(20, 56, 32, 0.88), rgba(15, 42, 24, 0.94)), url('/Karachi_Jinnah_Airport.jpg')`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               color: '#ffffff',
