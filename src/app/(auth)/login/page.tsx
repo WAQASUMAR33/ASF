@@ -4,23 +4,29 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Box,
-  Container,
   Paper,
   Typography,
   TextField,
   Button,
   Alert,
   CircularProgress,
+  Avatar,
   Grid,
   InputAdornment,
   IconButton,
-  Divider,
 } from '@mui/material';
+import SecurityIcon from '@mui/icons-material/Security';
+import PersonIcon from '@mui/icons-material/Person';
+import LockIcon from '@mui/icons-material/Lock';
+import PhoneIcon from '@mui/icons-material/Phone';
+import EmailIcon from '@mui/icons-material/Email';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import TagIcon from '@mui/icons-material/Tag';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import LockResetIcon from '@mui/icons-material/LockReset';
+import HowToRegIcon from '@mui/icons-material/HowToReg';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,15 +38,6 @@ export default function LoginPage() {
   const [pendingUserId, setPendingUserId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const quickRoles = [
-    { username: 'clerk_khi', label: 'Store Clerk (KHI)', station: 'Karachi' },
-    { username: 'officer_khi', label: 'Store Officer (KHI)', station: 'Karachi' },
-    { username: 'cso_khi', label: 'CSO (KHI)', station: 'Karachi' },
-    { username: 'dd_procurement', label: 'DD Procurement (HQ)', station: 'HQ National' },
-    { username: 'central_store', label: 'Central Store (HQ)', station: 'HQ Warehouse' },
-    { username: 'superadmin', label: 'Super Admin', station: 'Executive HQ' },
-  ];
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,206 +87,276 @@ export default function LoginPage() {
     <Box
       sx={{
         minHeight: '100vh',
-        bgcolor: '#faf8f5',
+        width: '100%',
+        backgroundImage: `linear-gradient(rgba(15, 30, 20, 0.65), rgba(30, 86, 49, 0.75)), url(/airport-bg.png)`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
         display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         p: { xs: 2, sm: 4 },
       }}
     >
-      <Container maxWidth="xs">
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 3, sm: 4 },
-            bgcolor: '#ffffff',
-            borderRadius: 3,
-            border: '1px solid #e0e2db',
-            boxShadow: '0 4px 20px rgba(30, 86, 49, 0.06)',
-          }}
-        >
-          {/* Subheading & Title */}
-          <Box sx={{ mb: 3 }}>
-            <Typography
-              variant="caption"
-              sx={{
-                color: '#2d6a4f',
-                fontWeight: 800,
-                letterSpacing: 2,
-                textTransform: 'uppercase',
-                display: 'block',
-                mb: 0.5,
-              }}
-            >
-              WELCOME BACK
-            </Typography>
-            <Typography variant="h4" sx={{ fontWeight: 800, color: '#191c1a', mb: 1, letterSpacing: -0.5 }}>
-              Sign in
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#56615b', fontSize: '0.875rem' }}>
-              Enter your official credentials to access your workspace.
-            </Typography>
-          </Box>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 3, fontSize: '0.75rem', borderRadius: 2 }}>
-              {error}
-            </Alert>
-          )}
-
-          <Box component="form" onSubmit={handleLogin} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-            {!require2FA ? (
-              <>
-                <Box>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: '#56615b', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', mb: 1, display: 'block' }}
-                  >
-                    FORCE NUMBER / USERNAME
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    placeholder="e.g. C-16005 or officer_khi"
-                    variant="outlined"
-                    size="medium"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <TagIcon sx={{ color: '#56615b', fontSize: '1.2rem' }} />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Box>
-
-                <Box>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: '#56615b', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', mb: 1, display: 'block' }}
-                  >
-                    PASSWORD
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    placeholder="••••••••••••"
-                    type={showPassword ? 'text' : 'password'}
-                    variant="outlined"
-                    size="medium"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LockOutlinedIcon sx={{ color: '#56615b', fontSize: '1.2rem' }} />
-                        </InputAdornment>
-                      ),
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton size="small" onClick={() => setShowPassword(!showPassword)} edge="end">
-                            {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Box>
-              </>
-            ) : (
+      <Paper
+        elevation={8}
+        sx={{
+          width: '100%',
+          maxWidth: 1050,
+          borderRadius: 3,
+          overflow: 'hidden',
+          bgcolor: '#ffffff',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)',
+        }}
+      >
+        <Grid container minHeight={580}>
+          {/* Left Deep Forest Green Banner */}
+          <Grid
+            item
+            xs={12}
+            md={6.5}
+            sx={{
+              bgcolor: '#1e5631',
+              color: '#ffffff',
+              p: { xs: 3, sm: 5 },
+              display: 'flex',
+              flexDirection: 'column',
+              justify: 'space-between',
+              position: 'relative',
+              backgroundImage: 'linear-gradient(135deg, #1e5631 0%, #11361e 100%)',
+            }}
+          >
+            {/* Top Branding Header */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
+              <Avatar
+                sx={{
+                  bgcolor: 'transparent',
+                  color: '#ffffff',
+                  border: '2px solid rgba(255, 255, 255, 0.8)',
+                  width: 56,
+                  height: 56,
+                }}
+              >
+                <SecurityIcon sx={{ fontSize: 36 }} />
+              </Avatar>
               <Box>
-                <Typography variant="subtitle2" sx={{ color: '#1e5631', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <VpnKeyIcon fontSize="small" /> Enter 6-Digit 2FA Code
+                <Typography variant="h5" sx={{ fontWeight: 900, letterSpacing: 0.5, lineHeight: 1.1 }}>
+                  AIRPORTS SECURITY FORCE
                 </Typography>
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  size="medium"
-                  inputProps={{ maxLength: 6, style: { textAlign: 'center', letterSpacing: 4, fontWeight: 'bold' } }}
-                  value={twoFactorCode}
-                  onChange={(e) => setTwoFactorCode(e.target.value)}
-                  required
-                  autoFocus
-                />
+                <Typography variant="caption" sx={{ color: '#a7f3d0', fontWeight: 600, letterSpacing: 0.5 }}>
+                  Logistics & Inventory Division • Government of Pakistan
+                </Typography>
               </Box>
-            )}
-
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              disabled={loading}
-              sx={{
-                py: 1.4,
-                bgcolor: '#1e5631',
-                color: '#ffffff',
-                fontWeight: 700,
-                fontSize: '0.95rem',
-                borderRadius: '12px',
-                '&:hover': { bgcolor: '#1b4d2e' },
-              }}
-            >
-              {loading ? <CircularProgress size={24} color="inherit" /> : require2FA ? 'Verify 2FA Code' : 'Sign in to ASF System'}
-            </Button>
-          </Box>
-
-          <Box sx={{ mt: 3, textAlign: 'center' }}>
-            <Typography variant="caption" sx={{ color: '#56615b', display: 'block', mb: 0.5 }}>
-              Contact your administrator for access credentials.
-            </Typography>
-            <Typography variant="caption" sx={{ color: '#8c9290', fontSize: '0.7rem' }}>
-              System Version v0.1.0 • Government of Pakistan
-            </Typography>
-          </Box>
-
-          {!require2FA && (
-            <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid #e0e2db' }}>
-              <Typography variant="caption" sx={{ color: '#1e5631', fontWeight: 800, mb: 1.5, display: 'block' }}>
-                Quick Test Account Selection (6 RBAC Roles):
-              </Typography>
-              <Grid container spacing={1}>
-                {quickRoles.map((r) => (
-                  <Grid item xs={6} key={r.username}>
-                    <Button
-                      fullWidth
-                      size="small"
-                      onClick={() => {
-                        setUsername(r.username);
-                        setPassword('ASFPass123!');
-                      }}
-                      sx={{
-                        justifyContent: 'flex-start',
-                        textAlign: 'left',
-                        p: 0.8,
-                        fontSize: '0.68rem',
-                        bgcolor: username === r.username ? '#1e5631' : '#f5f5f3',
-                        color: username === r.username ? '#ffffff' : '#334155',
-                        border: username === r.username ? '1px solid #1b4d2e' : '1px solid #e0e2db',
-                        borderRadius: '8px',
-                        '&:hover': {
-                          bgcolor: username === r.username ? '#1b4d2e' : '#e2e8f0',
-                        },
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="caption" sx={{ fontWeight: 800, display: 'block', lineHeight: 1.2 }}>
-                          {r.label}
-                        </Typography>
-                        <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.8 }}>
-                          {r.station}
-                        </Typography>
-                      </Box>
-                    </Button>
-                  </Grid>
-                ))}
-              </Grid>
             </Box>
-          )}
-        </Paper>
-      </Container>
+
+            {/* Middle Feature Bullet Checklist */}
+            <Box sx={{ my: 3 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 2, color: '#ffffff' }}>
+                Please login to manage:
+              </Typography>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pl: 0.5 }}>
+                {[
+                  'Station Demand Drafting & State Machine Workflow',
+                  'Entitlement Ceiling & Replacement Lifecycle Lock Validation',
+                  'HQ National Rollup & Real-Time Deficiency Formula Engine',
+                  'Multi-Stage Central Store Allocation & Auto-Stock Dispatch',
+                  'Station Headcount Manpower Matrix across 30+ Airports',
+                  'System Audit Trail & Role-Based Access Control (RBAC)',
+                ].map((item, idx) => (
+                  <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                    <ChevronRightIcon sx={{ color: '#a7f3d0', fontSize: '1.2rem' }} />
+                    <Typography variant="body2" sx={{ color: '#ecfdf5', fontWeight: 500, fontSize: '0.875rem' }}>
+                      {item}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+
+            {/* Footer Helpline Contacts */}
+            <Box sx={{ pt: 3, borderTop: '1px solid rgba(255, 255, 255, 0.15)', display: 'flex', flexDirection: 'column', gap: 0.8 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <PhoneIcon sx={{ fontSize: '0.9rem', color: '#a7f3d0' }} />
+                  <Typography variant="caption" sx={{ color: '#ffffff', fontWeight: 700 }}>051 111 772 772</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <EmailIcon sx={{ fontSize: '0.9rem', color: '#a7f3d0' }} />
+                  <Typography variant="caption" sx={{ color: '#ffffff', fontWeight: 700 }}>helpline@asf.gov.pk</Typography>
+                </Box>
+              </Box>
+              <Typography variant="caption" sx={{ color: '#a7f3d0', fontSize: '0.7rem', opacity: 0.8, mt: 0.5 }}>
+                © 2026 Airports Security Force HQ • All rights reserved Government of Pakistan
+              </Typography>
+            </Box>
+          </Grid>
+
+          {/* Right White Form Side */}
+          <Grid
+            item
+            xs={12}
+            md={5.5}
+            sx={{
+              p: { xs: 3, sm: 5 },
+              bgcolor: '#ffffff',
+              display: 'flex',
+              flexDirection: 'column',
+              justify: 'space-between',
+            }}
+          >
+            <Box>
+              {/* Form Top Brand Icon */}
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <SecurityIcon sx={{ color: '#1e5631', fontSize: 28 }} />
+                  <Typography variant="h6" sx={{ fontWeight: 900, color: '#1e5631', letterSpacing: 0.5 }}>
+                    ASF IMS
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Typography variant="h5" sx={{ fontWeight: 900, color: '#1e5631', letterSpacing: 0.5, mb: 0.5 }}>
+                LOGIN
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#56615b', mb: 3, display: 'block' }}>
+                Enter your official security handle and password to sign in.
+              </Typography>
+
+              {error && (
+                <Alert severity="error" sx={{ mb: 3, fontSize: '0.75rem', borderRadius: 2 }}>
+                  {error}
+                </Alert>
+              )}
+
+              <Box component="form" onSubmit={handleLogin} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                {!require2FA ? (
+                  <>
+                    <TextField
+                      fullWidth
+                      placeholder="Registration / Username"
+                      variant="outlined"
+                      size="medium"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <PersonIcon sx={{ color: '#1e5631', fontSize: '1.2rem' }} />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+
+                    <TextField
+                      fullWidth
+                      placeholder="Password"
+                      type={showPassword ? 'text' : 'password'}
+                      variant="outlined"
+                      size="medium"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <LockIcon sx={{ color: '#1e5631', fontSize: '1.2rem' }} />
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton size="small" onClick={() => setShowPassword(!showPassword)} edge="end">
+                              {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </>
+                ) : (
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ color: '#1e5631', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <VpnKeyIcon fontSize="small" /> Enter 6-Digit 2FA Code
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      size="medium"
+                      inputProps={{ maxLength: 6, style: { textAlign: 'center', letterSpacing: 4, fontWeight: 'bold' } }}
+                      value={twoFactorCode}
+                      onChange={(e) => setTwoFactorCode(e.target.value)}
+                      required
+                      autoFocus
+                    />
+                  </Box>
+                )}
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={loading}
+                  sx={{
+                    py: 1.2,
+                    bgcolor: '#1e5631',
+                    color: '#ffffff',
+                    fontWeight: 800,
+                    width: 'fit-content',
+                    px: 4,
+                    alignSelf: 'flex-start',
+                    borderRadius: '8px',
+                    '&:hover': { bgcolor: '#1b4d2e' },
+                  }}
+                >
+                  {loading ? <CircularProgress size={20} color="inherit" /> : require2FA ? 'Verify 2FA' : 'Login'}
+                </Button>
+              </Box>
+
+              {/* Sub Links */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3, pt: 1 }}>
+                <Button
+                  size="small"
+                  startIcon={<LockResetIcon fontSize="small" />}
+                  sx={{ color: '#56615b', fontSize: '0.75rem', textTransform: 'none' }}
+                  onClick={() => alert('Contact your Station Store Officer or HQ System Administrator for password reset.')}
+                >
+                  Forgot Password
+                </Button>
+                <Button
+                  size="small"
+                  startIcon={<HelpOutlineIcon fontSize="small" />}
+                  sx={{ color: '#56615b', fontSize: '0.75rem', textTransform: 'none' }}
+                  onClick={() => alert('ASF IMS Support Helpline: 051 111 772 772 | Email: helpline@asf.gov.pk')}
+                >
+                  Help & Support
+                </Button>
+              </Box>
+            </Box>
+
+            {/* Bottom Callout Banner Button */}
+            <Box sx={{ mt: 3, pt: 2 }}>
+              <Button
+                fullWidth
+                variant="contained"
+                startIcon={<HowToRegIcon />}
+                sx={{
+                  py: 1.3,
+                  bgcolor: '#2d6a4f',
+                  color: '#ffffff',
+                  fontWeight: 800,
+                  fontSize: '0.85rem',
+                  borderRadius: '10px',
+                  boxShadow: '0 4px 14px rgba(45, 106, 79, 0.25)',
+                  '&:hover': { bgcolor: '#1b4332' },
+                }}
+                onClick={() => alert('Official Station Officer & Store Clerk Portal Access Active.')}
+              >
+                Station Store Officer & Clerk Portal
+              </Button>
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
     </Box>
   );
 }
