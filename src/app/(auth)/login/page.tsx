@@ -193,10 +193,7 @@ export default function LoginPage() {
             }}
           >
             <Box>
-              {/* Form Top Logo Badge */}
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                <AsfLogo size={36} showText={true} light={false} />
-              </Box>
+
 
               <Typography variant="h5" sx={{ fontWeight: 900, color: '#1e5631', letterSpacing: 0.5, mb: 0.5 }}>
                 LOGIN
