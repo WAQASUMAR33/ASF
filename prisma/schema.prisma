@@ -1,0 +1,265 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  STORE_CLERK
+  STORE_OFFICER
+  CSO
+  DD_PROCUREMENT
+  CENTRAL_STORE
+  SYSTEM_ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  UNISEX
+}
+
+enum AccountingUnit {
+  METERS
+  NO
+  PAIR
+  SET
+}
+
+enum DemandStatus {
+  DRAFT
+  PENDING_STORE_OFFICER
+  PENDING_CSO
+  APPROVED_BY_STATION
+  RETURNED_TO_CLERK
+  HQ_CONSOLIDATED
+}
+
+enum DistributionStatus {
+  DRAFT
+  PENDING_DD_APPROVAL
+  APPROVED
+  ISSUED
+  CANCELLED
+}
+
+model Station {
+  id           String                  @id @default(uuid()) @db.VarChar(36)
+  code         String                  @unique @db.VarChar(50)
+  name         String                  @db.VarChar(191)
+  isActive     Boolean                 @default(true)
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+  users        User[]
+  manpower     StationManpower?
+  demands      StationDemand[]
+  distributions InventoryDistribution[]
+  @@map("stations")
+}
+
+model User {
+  id                    String                 @id @default(uuid()) @db.VarChar(36)
+  username              String                 @unique @db.VarChar(100)
+  email                 String?                @unique @db.VarChar(191)
+  passwordHash          String                 @db.VarChar(255)
+  fullName              String                 @db.VarChar(191)
+  role                  Role
+  stationId             String?                @db.VarChar(36)
+  isActive              Boolean                @default(true)
+  twoFactorEnabled      Boolean                @default(false)
+  twoFactorSecret       String?                @db.Text
+  twoFactorConfirmedAt  DateTime?
+  backupCodes           Json?
+  twoFactorTempSecret   String?                @db.Text
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  station               Station?               @relation(fields: [stationId], references: [id])
+  sessions              UserSession[]
+  createdDemands        StationDemand[]        @relation("CreatedBy")
+  actionLogs            DemandAuditLog[]
+  distributionLogs      DistributionAuditLog[]
+  @@index([stationId])
+  @@map("users")
+}
+
+model UserSession {
+  id            String   @id @default(uuid()) @db.VarChar(36)
+  userId        String   @db.VarChar(36)
+  token         String   @unique @db.VarChar(191)
+  is2FAVerified Boolean  @default(false)
+  ipAddress     String?  @db.VarChar(45)
+  userAgent     String?  @db.Text
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@map("user_sessions")
+}
+
+model StationManpower {
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  stationId  String   @unique @db.VarChar(36)
+  heldMale   Int      @default(0)
+  heldFemale Int      @default(0)
+  totalHeld  Int      @default(0)
+  updatedAt  DateTime @updatedAt
+  station    Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  @@map("station_manpower")
+}
+
+model ItemCategory {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  name        String    @unique @db.VarChar(100)
+  description String?   @db.Text
+  items       KitItem[]
+  @@map("item_categories")
+}
+
+model KitItem {
+  id                  String              @id @default(uuid()) @db.VarChar(36)
+  itemCode            String              @unique @db.VarChar(50)
+  name                String              @db.VarChar(191)
+  categoryId          String              @db.VarChar(36)
+  unitOfIssue         AccountingUnit
+  scaleOfIssue        Decimal             @db.Decimal(5, 2)
+  lifeCycleYears      Int
+  targetGender        Gender              @default(UNISEX)
+  isSeasonal          Boolean             @default(false)
+  requiresMeasurement Boolean             @default(false)
+  specSheetUrl        String?             @db.VarChar(512)
+  isActive            Boolean             @default(true)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  category            ItemCategory        @relation(fields: [categoryId], references: [id])
+  sizes               ItemSizeChart[]
+  demandItems         StationDemandItem[]
+  centralStock        CentralStock[]
+  distributionItems   DistributionItem[]
+  @@index([categoryId])
+  @@map("kit_items")
+}
+
+model ItemSizeChart {
+  id                String              @id @default(uuid()) @db.VarChar(36)
+  itemId            String              @db.VarChar(36)
+  sizeLabel         String              @db.VarChar(50)
+  sortOrder         Int                 @default(0)
+  item              KitItem             @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  demandItems       StationDemandItem[]
+  centralStock      CentralStock[]
+  distributionItems DistributionItem[]
+  @@unique([itemId, sizeLabel])
+  @@map("item_size_charts")
+}
+
+model StationDemand {
+  id            String              @id @default(uuid()) @db.VarChar(36)
+  demandNumber  String              @unique @db.VarChar(100)
+  stationId     String              @db.VarChar(36)
+  fiscalYear    Int
+  status        DemandStatus        @default(DRAFT)
+  createdById   String              @db.VarChar(36)
+  rejectionNote String?             @db.Text
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  station       Station             @relation(fields: [stationId], references: [id])
+  createdBy     User                @relation("CreatedBy", fields: [createdById], references: [id])
+  items         StationDemandItem[]
+  auditLogs     DemandAuditLog[]
+  @@index([stationId])
+  @@index([createdById])
+  @@map("station_demands")
+}
+
+model StationDemandItem {
+  id                   String         @id @default(uuid()) @db.VarChar(36)
+  demandId             String         @db.VarChar(36)
+  itemId               String         @db.VarChar(36)
+  sizeId               String?        @db.VarChar(36)
+  customMeasurement    String?        @db.VarChar(191)
+  calculatedMaxAllowed Int
+  demandedQuantity     Int
+  approvedQuantity     Int?
+  lastIssuedDate       DateTime?
+  demand               StationDemand  @relation(fields: [demandId], references: [id], onDelete: Cascade)
+  item                 KitItem        @relation(fields: [itemId], references: [id])
+  size                 ItemSizeChart? @relation(fields: [sizeId], references: [id])
+  @@index([demandId])
+  @@index([itemId])
+  @@index([sizeId])
+  @@map("station_demand_items")
+}
+
+model DemandAuditLog {
+  id         String        @id @default(uuid()) @db.VarChar(36)
+  demandId   String        @db.VarChar(36)
+  actionBy   String        @db.VarChar(36)
+  fromStatus DemandStatus
+  toStatus   DemandStatus
+  comments   String?       @db.Text
+  createdAt  DateTime      @default(now())
+  demand     StationDemand @relation(fields: [demandId], references: [id], onDelete: Cascade)
+  user       User          @relation(fields: [actionBy], references: [id])
+  @@index([demandId])
+  @@index([actionBy])
+  @@map("demand_audit_logs")
+}
+
+model CentralStock {
+  id           String         @id @default(uuid()) @db.VarChar(36)
+  itemId       String         @db.VarChar(36)
+  sizeId       String?        @db.VarChar(36)
+  availableQty Int            @default(0)
+  reservedQty  Int            @default(0)
+  updatedAt    DateTime       @updatedAt
+  item         KitItem        @relation(fields: [itemId], references: [id])
+  size         ItemSizeChart? @relation(fields: [sizeId], references: [id])
+  @@unique([itemId, sizeId])
+  @@map("central_stocks")
+}
+
+model InventoryDistribution {
+  id             String                @id @default(uuid()) @db.VarChar(36)
+  dispatchNumber String                @unique @db.VarChar(100)
+  stationId      String                @db.VarChar(36)
+  status         DistributionStatus    @default(DRAFT)
+  notes          String?               @db.Text
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  station        Station               @relation(fields: [stationId], references: [id])
+  items          DistributionItem[]
+  auditLogs      DistributionAuditLog[]
+  @@index([stationId])
+  @@map("inventory_distributions")
+}
+
+model DistributionItem {
+  id             String                @id @default(uuid()) @db.VarChar(36)
+  distributionId String                @db.VarChar(36)
+  itemId         String                @db.VarChar(36)
+  sizeId         String?               @db.VarChar(36)
+  issuedQty      Int
+  distribution   InventoryDistribution @relation(fields: [distributionId], references: [id], onDelete: Cascade)
+  item           KitItem               @relation(fields: [itemId], references: [id])
+  size           ItemSizeChart?        @relation(fields: [sizeId], references: [id])
+  @@index([distributionId])
+  @@map("distribution_items")
+}
+
+model DistributionAuditLog {
+  id             String                @id @default(uuid()) @db.VarChar(36)
+  distributionId String                @db.VarChar(36)
+  actionBy       String                @db.VarChar(36)
+  fromStatus     DistributionStatus
+  toStatus       DistributionStatus
+  comments       String?               @db.Text
+  createdAt      DateTime              @default(now())
+  distribution   InventoryDistribution @relation(fields: [distributionId], references: [id], onDelete: Cascade)
+  user           User                  @relation(fields: [actionBy], references: [id])
+  @@index([distributionId])
+  @@index([actionBy])
+  @@map("distribution_audit_logs")
+}
