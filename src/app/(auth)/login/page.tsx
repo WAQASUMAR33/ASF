@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   Box,
   Paper,
@@ -85,23 +86,42 @@ export default function LoginPage() {
   return (
     <Box
       sx={{
+        position: 'relative',
         minHeight: '100vh',
-        width: '100%',
-        backgroundImage: `linear-gradient(rgba(10, 24, 15, 0.45), rgba(10, 24, 15, 0.55)), url('/Karachi_Jinnah_Airport.jpg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed',
+        width: '100vw',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         p: { xs: 2, sm: 4 },
+        overflow: 'hidden',
       }}
     >
+      {/* Fixed Full-Screen Background Image */}
+      <Box sx={{ position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden' }}>
+        <Image
+          src="/Karachi_Jinnah_Airport.jpg"
+          alt="Karachi Jinnah International Airport Background"
+          fill
+          priority
+          quality={100}
+          sizes="100vw"
+          style={{ objectFit: 'cover', objectPosition: 'center' }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: 'linear-gradient(rgba(10, 24, 15, 0.45), rgba(10, 24, 15, 0.55))',
+          }}
+        />
+      </Box>
+
       {/* Main Login Widget Container */}
       <Paper
         elevation={16}
         sx={{
+          position: 'relative',
+          zIndex: 1,
           width: '100%',
           maxWidth: 1080,
           borderRadius: 0,
@@ -118,23 +138,41 @@ export default function LoginPage() {
             md={6.5}
             sx={{
               position: 'relative',
-              backgroundImage: `linear-gradient(rgba(20, 56, 32, 0.88), rgba(15, 42, 24, 0.94)), url('/Karachi_Jinnah_Airport.jpg')`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
               color: '#ffffff',
               p: { xs: 3, sm: 5 },
               display: 'flex',
               flexDirection: 'column',
               justify: 'space-between',
+              overflow: 'hidden',
             }}
           >
+            {/* Banner Background Image Overlay */}
+            <Box sx={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+              <Image
+                src="/Karachi_Jinnah_Airport.jpg"
+                alt="Airport Banner Overlay"
+                fill
+                priority
+                quality={90}
+                sizes="50vw"
+                style={{ objectFit: 'cover', objectPosition: 'center' }}
+              />
+              <Box
+                sx={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundImage: 'linear-gradient(rgba(20, 56, 32, 0.88), rgba(15, 42, 24, 0.94))',
+                }}
+              />
+            </Box>
+
             {/* Top ASF Official Crest Logo */}
-            <Box sx={{ mb: 4 }}>
+            <Box sx={{ position: 'relative', zIndex: 1, mb: 4 }}>
               <AsfLogo size={56} showText={true} light={true} />
             </Box>
 
             {/* Middle Feature Bullet Checklist */}
-            <Box sx={{ my: 2 }}>
+            <Box sx={{ position: 'relative', zIndex: 1, my: 2 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 2, color: '#ffffff', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
                 Please login to manage:
               </Typography>
@@ -162,7 +200,7 @@ export default function LoginPage() {
             </Box>
 
             {/* Footer Helpline Contacts */}
-            <Box sx={{ pt: 3, borderTop: '1px solid rgba(255, 255, 255, 0.2)', display: 'flex', flexDirection: 'column', gap: 0.8 }}>
+            <Box sx={{ position: 'relative', zIndex: 1, pt: 3, borderTop: '1px solid rgba(255, 255, 255, 0.2)', display: 'flex', flexDirection: 'column', gap: 0.8 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <PhoneIcon sx={{ fontSize: '0.9rem', color: '#f39c12' }} />
@@ -193,8 +231,6 @@ export default function LoginPage() {
             }}
           >
             <Box>
-
-
               <Typography variant="h5" sx={{ fontWeight: 900, color: '#1e5631', letterSpacing: 0.5, mb: 0.5 }}>
                 LOGIN
               </Typography>

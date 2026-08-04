@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body {
+  background-color: transparent !important;
+}
+
 @layer base {
   body {
     @apply text-slate-900 antialiased min-h-screen selection:bg-emerald-800 selection:text-white;
