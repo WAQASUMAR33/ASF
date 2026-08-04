@@ -86,11 +86,12 @@ export default function LoginPage() {
     <Box
       sx={{
         minHeight: '100vh',
-        width: '100%',
-        backgroundImage: `linear-gradient(rgba(10, 24, 15, 0.65), rgba(27, 77, 44, 0.75)), url(/airport-bg.png)`,
+        width: '100vw',
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('/airport-bg.jpg')`,
         backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        backgroundPosition: 'center center',
         backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -98,14 +99,14 @@ export default function LoginPage() {
       }}
     >
       <Paper
-        elevation={8}
+        elevation={12}
         sx={{
           width: '100%',
           maxWidth: 1080,
-          borderRadius: 3,
+          borderRadius: 4,
           overflow: 'hidden',
           bgcolor: '#ffffff',
-          boxShadow: '0 24px 70px rgba(0, 0, 0, 0.45)',
+          boxShadow: '0 24px 80px rgba(0, 0, 0, 0.65)',
         }}
       >
         <Grid container minHeight={600}>
@@ -116,7 +117,7 @@ export default function LoginPage() {
             md={6.5}
             sx={{
               position: 'relative',
-              backgroundImage: `linear-gradient(rgba(20, 56, 32, 0.88), rgba(15, 42, 24, 0.94)), url(/airport-bg.png)`,
+              backgroundImage: `linear-gradient(rgba(20, 56, 32, 0.88), rgba(15, 42, 24, 0.94)), url('/airport-bg.jpg')`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               color: '#ffffff',
