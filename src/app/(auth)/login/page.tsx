@@ -10,12 +10,10 @@ import {
   Button,
   Alert,
   CircularProgress,
-  Avatar,
   Grid,
   InputAdornment,
   IconButton,
 } from '@mui/material';
-import SecurityIcon from '@mui/icons-material/Security';
 import PersonIcon from '@mui/icons-material/Person';
 import LockIcon from '@mui/icons-material/Lock';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -27,6 +25,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import LockResetIcon from '@mui/icons-material/LockReset';
 import HowToRegIcon from '@mui/icons-material/HowToReg';
+import AsfLogo from '@/components/ui/AsfLogo';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -88,7 +87,7 @@ export default function LoginPage() {
       sx={{
         minHeight: '100vh',
         width: '100%',
-        backgroundImage: `linear-gradient(rgba(15, 30, 20, 0.65), rgba(30, 86, 49, 0.75)), url(/airport-bg.png)`,
+        backgroundImage: `linear-gradient(rgba(10, 24, 15, 0.65), rgba(27, 77, 44, 0.75)), url(/airport-bg.png)`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -102,56 +101,39 @@ export default function LoginPage() {
         elevation={8}
         sx={{
           width: '100%',
-          maxWidth: 1050,
+          maxWidth: 1080,
           borderRadius: 3,
           overflow: 'hidden',
           bgcolor: '#ffffff',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)',
+          boxShadow: '0 24px 70px rgba(0, 0, 0, 0.45)',
         }}
       >
-        <Grid container minHeight={580}>
-          {/* Left Deep Forest Green Banner */}
+        <Grid container minHeight={600}>
+          {/* Left Deep Forest Green Banner with Airport Image Overlay */}
           <Grid
             item
             xs={12}
             md={6.5}
             sx={{
-              bgcolor: '#1e5631',
+              position: 'relative',
+              backgroundImage: `linear-gradient(rgba(20, 56, 32, 0.88), rgba(15, 42, 24, 0.94)), url(/airport-bg.png)`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
               color: '#ffffff',
               p: { xs: 3, sm: 5 },
               display: 'flex',
               flexDirection: 'column',
               justify: 'space-between',
-              position: 'relative',
-              backgroundImage: 'linear-gradient(135deg, #1e5631 0%, #11361e 100%)',
             }}
           >
-            {/* Top Branding Header */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
-              <Avatar
-                sx={{
-                  bgcolor: 'transparent',
-                  color: '#ffffff',
-                  border: '2px solid rgba(255, 255, 255, 0.8)',
-                  width: 56,
-                  height: 56,
-                }}
-              >
-                <SecurityIcon sx={{ fontSize: 36 }} />
-              </Avatar>
-              <Box>
-                <Typography variant="h5" sx={{ fontWeight: 900, letterSpacing: 0.5, lineHeight: 1.1 }}>
-                  AIRPORTS SECURITY FORCE
-                </Typography>
-                <Typography variant="caption" sx={{ color: '#a7f3d0', fontWeight: 600, letterSpacing: 0.5 }}>
-                  Logistics & Inventory Division • Government of Pakistan
-                </Typography>
-              </Box>
+            {/* Top ASF Official Crest Logo */}
+            <Box sx={{ mb: 4 }}>
+              <AsfLogo size={56} showText={true} light={true} />
             </Box>
 
             {/* Middle Feature Bullet Checklist */}
-            <Box sx={{ my: 3 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 2, color: '#ffffff' }}>
+            <Box sx={{ my: 2 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 2, color: '#ffffff', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
                 Please login to manage:
               </Typography>
 
@@ -165,8 +147,11 @@ export default function LoginPage() {
                   'System Audit Trail & Role-Based Access Control (RBAC)',
                 ].map((item, idx) => (
                   <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
-                    <ChevronRightIcon sx={{ color: '#a7f3d0', fontSize: '1.2rem' }} />
-                    <Typography variant="body2" sx={{ color: '#ecfdf5', fontWeight: 500, fontSize: '0.875rem' }}>
+                    <ChevronRightIcon sx={{ color: '#f39c12', fontSize: '1.2rem' }} />
+                    <Typography
+                      variant="body2"
+                      sx={{ color: '#ecfdf5', fontWeight: 600, fontSize: '0.875rem', textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}
+                    >
                       {item}
                     </Typography>
                   </Box>
@@ -175,18 +160,18 @@ export default function LoginPage() {
             </Box>
 
             {/* Footer Helpline Contacts */}
-            <Box sx={{ pt: 3, borderTop: '1px solid rgba(255, 255, 255, 0.15)', display: 'flex', flexDirection: 'column', gap: 0.8 }}>
+            <Box sx={{ pt: 3, borderTop: '1px solid rgba(255, 255, 255, 0.2)', display: 'flex', flexDirection: 'column', gap: 0.8 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <PhoneIcon sx={{ fontSize: '0.9rem', color: '#a7f3d0' }} />
-                  <Typography variant="caption" sx={{ color: '#ffffff', fontWeight: 700 }}>051 111 772 772</Typography>
+                  <PhoneIcon sx={{ fontSize: '0.9rem', color: '#f39c12' }} />
+                  <Typography variant="caption" sx={{ color: '#ffffff', fontWeight: 800 }}>051 111 772 772</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <EmailIcon sx={{ fontSize: '0.9rem', color: '#a7f3d0' }} />
-                  <Typography variant="caption" sx={{ color: '#ffffff', fontWeight: 700 }}>helpline@asf.gov.pk</Typography>
+                  <EmailIcon sx={{ fontSize: '0.9rem', color: '#f39c12' }} />
+                  <Typography variant="caption" sx={{ color: '#ffffff', fontWeight: 800 }}>helpline@asf.gov.pk</Typography>
                 </Box>
               </Box>
-              <Typography variant="caption" sx={{ color: '#a7f3d0', fontSize: '0.7rem', opacity: 0.8, mt: 0.5 }}>
+              <Typography variant="caption" sx={{ color: '#a7f3d0', fontSize: '0.7rem', opacity: 0.9, mt: 0.5 }}>
                 © 2026 Airports Security Force HQ • All rights reserved Government of Pakistan
               </Typography>
             </Box>
@@ -206,14 +191,9 @@ export default function LoginPage() {
             }}
           >
             <Box>
-              {/* Form Top Brand Icon */}
+              {/* Form Top Logo Badge */}
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <SecurityIcon sx={{ color: '#1e5631', fontSize: 28 }} />
-                  <Typography variant="h6" sx={{ fontWeight: 900, color: '#1e5631', letterSpacing: 0.5 }}>
-                    ASF IMS
-                  </Typography>
-                </Box>
+                <AsfLogo size={36} showText={true} light={false} />
               </Box>
 
               <Typography variant="h5" sx={{ fontWeight: 900, color: '#1e5631', letterSpacing: 0.5, mb: 0.5 }}>
