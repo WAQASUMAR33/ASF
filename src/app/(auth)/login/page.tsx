@@ -103,7 +103,7 @@ export default function LoginPage() {
         sx={{
           width: '100%',
           maxWidth: 1080,
-          borderRadius: 4,
+          borderRadius: 0,
           overflow: 'hidden',
           bgcolor: '#ffffff',
           boxShadow: '0 24px 80px rgba(0, 0, 0, 0.65)',
