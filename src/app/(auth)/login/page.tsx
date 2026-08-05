@@ -97,14 +97,24 @@ export default function LoginPage() {
       }}
     >
       {/* Fixed Full-Screen Background Image */}
-      <Box sx={{ position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden' }}>
+      <Box
+        sx={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 0,
+          overflow: 'hidden',
+          backgroundImage: 'url("/Karachi_Jinnah_Airport.jpg")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
         <Image
           src="/Karachi_Jinnah_Airport.jpg"
           alt="Karachi Jinnah International Airport Background"
           fill
           priority
-          quality={100}
-          sizes="100vw"
+          unoptimized
           style={{ objectFit: 'cover', objectPosition: 'center' }}
         />
         <Box
@@ -147,14 +157,23 @@ export default function LoginPage() {
             }}
           >
             {/* Banner Background Image Overlay */}
-            <Box sx={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+            <Box
+              sx={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 0,
+                backgroundImage: 'url("/Karachi_Jinnah_Airport.jpg")',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }}
+            >
               <Image
                 src="/Karachi_Jinnah_Airport.jpg"
                 alt="Airport Banner Overlay"
                 fill
                 priority
-                quality={90}
-                sizes="50vw"
+                unoptimized
                 style={{ objectFit: 'cover', objectPosition: 'center' }}
               />
               <Box
