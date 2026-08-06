@@ -115,7 +115,7 @@ export default function Sidebar({ userRole = 'STORE_CLERK' }: SidebarProps) {
                     href={item.href}
                     selected={isActive}
                     sx={{
-                      borderRadius: 2.5,
+                      borderRadius: 0,
                       py: 1,
                       px: 1.5,
                       '&.Mui-selected': {
@@ -154,7 +154,7 @@ export default function Sidebar({ userRole = 'STORE_CLERK' }: SidebarProps) {
       </Box>
 
       {/* Footer Info Box */}
-      <Paper elevation={0} sx={{ p: 2, bgcolor: '#faf8f5', border: '1px solid #e0e2db', borderRadius: 2 }}>
+      <Paper elevation={0} sx={{ p: 2, bgcolor: '#faf8f5', border: '1px solid #e0e2db', borderRadius: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
           <LockIcon fontSize="small" sx={{ color: '#1e5631' }} />
           <Typography variant="subtitle2" sx={{ fontWeight: 800, fontSize: '0.75rem', color: '#191c1a' }}>

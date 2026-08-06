@@ -12,7 +12,7 @@ This document serves as the **Single Source of Truth (SSOT)** for all UI/UX desi
 | **Secondary (Muted Accent Green)** | `#2d6a4f` / `#386641` | Action triggers, status chips, quick selectors, success indicators |
 | **Background Default** | `#faf8f5` / `#f8f9fa` | Warm off-white / light ivory portal background |
 | **Background Paper** | `#ffffff` | Pure white cards, elevation surfaces, table containers, dialogs |
-| **Input Fill Background** | `#f5f5f3` / `#f0f2ee` | Soft rounded input container fill (`borderRadius: 12px`) |
+| **Input Fill Background** | `#f5f5f3` / `#f0f2ee` | Soft sharp input container fill (`borderRadius: 0px`) |
 | **Border Color** | `#e0e2db` / `#e2e8f0` | Card dividers, table borders, list item outlines |
 | **Text Primary** | `#191c1a` | Deep charcoal primary text |
 | **Text Secondary** | `#56615b` / `#666666` | Muted subtitle text and captions |
@@ -26,7 +26,7 @@ This document serves as the **Single Source of Truth (SSOT)** for all UI/UX desi
 ### 2.1 Material UI (MUI v5)
 - All pages must consume components exclusively from `@mui/material` and `@mui/icons-material`.
 - Wrapped globally in `src/components/theme/ThemeRegistry.tsx` (`mode: 'light'`).
-- Input TextFields use rounded corners (`borderRadius: 12px` / `0.75rem`) with soft fill (`#f5f5f3`).
+- All cards, tables, dialogs, buttons, inputs, chips, and paper surfaces strictly use sharp corners (`borderRadius: 0px`).
 
 ### 2.2 Navigation Layout (Navbar & Sidebar)
 - **Top Navbar:** Pure white (`#ffffff`) AppBar with `1px solid #e0e2db` bottom border.

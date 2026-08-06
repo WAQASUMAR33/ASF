@@ -48,17 +48,17 @@ const theme = createTheme({
     },
   },
   shape: {
-    borderRadius: 12,
+    borderRadius: 0,
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: '10px',
+          borderRadius: '0px !important',
           fontWeight: 700,
           boxShadow: 'none',
           '&:hover': {
-            boxShadow: '0 4px 12px rgba(30, 86, 49, 0.2)',
+            boxShadow: '0 2px 8px rgba(30, 86, 49, 0.2)',
           },
         },
       },
@@ -67,8 +67,9 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
+          borderRadius: '0px !important',
           border: '1px solid #e0e2db',
-          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.03)',
+          boxShadow: 'none',
         },
       },
     },
@@ -82,10 +83,11 @@ const theme = createTheme({
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          borderRadius: '12px',
+          borderRadius: '0px !important',
           backgroundColor: '#f5f5f3',
           '& .MuiOutlinedInput-notchedOutline': {
             borderColor: '#e0e2db',
+            borderRadius: '0px !important',
           },
           '&:hover .MuiOutlinedInput-notchedOutline': {
             borderColor: '#1e5631',
@@ -99,7 +101,29 @@ const theme = createTheme({
     MuiChip: {
       styleOverrides: {
         root: {
+          borderRadius: '0px !important',
           fontWeight: 700,
+        },
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          borderRadius: '0px !important',
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: '0px !important',
+        },
+      },
+    },
+    MuiAlert: {
+      styleOverrides: {
+        root: {
+          borderRadius: '0px !important',
         },
       },
     },

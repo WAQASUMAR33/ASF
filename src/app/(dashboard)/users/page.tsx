@@ -313,7 +313,7 @@ export default function UsersPage() {
         sx={{
           p: 3,
           bgcolor: '#ffffff',
-          borderRadius: 3,
+          borderRadius: 0,
           border: '1px solid #e0e2db',
           display: 'flex',
           flexWrap: 'wrap',
@@ -355,7 +355,7 @@ export default function UsersPage() {
             fontWeight: 800,
             px: 3,
             py: 1.2,
-            borderRadius: 2.5,
+            borderRadius: 0,
             textTransform: 'none',
             boxShadow: '0 4px 14px rgba(30, 86, 49, 0.3)',
             '&:hover': {
@@ -371,7 +371,7 @@ export default function UsersPage() {
       {/* KPI Metrics Row */}
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6} md={3}>
-          <Paper elevation={0} sx={{ p: 2.5, bgcolor: '#ffffff', border: '1px solid #e0e2db', borderRadius: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Paper elevation={0} sx={{ p: 2.5, bgcolor: '#ffffff', border: '1px solid #e0e2db', borderRadius: 0, display: 'flex', alignItems: 'center', gap: 2 }}>
             <Avatar sx={{ bgcolor: 'rgba(30, 86, 49, 0.1)', color: '#1e5631', width: 44, height: 44 }}>
               <PeopleIcon />
             </Avatar>
@@ -387,7 +387,7 @@ export default function UsersPage() {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Paper elevation={0} sx={{ p: 2.5, bgcolor: '#ffffff', border: '1px solid #e0e2db', borderRadius: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Paper elevation={0} sx={{ p: 2.5, bgcolor: '#ffffff', border: '1px solid #e0e2db', borderRadius: 0, display: 'flex', alignItems: 'center', gap: 2 }}>
             <Avatar sx={{ bgcolor: 'rgba(198, 40, 40, 0.1)', color: '#c62828', width: 44, height: 44 }}>
               <ShieldIcon />
             </Avatar>
@@ -403,7 +403,7 @@ export default function UsersPage() {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Paper elevation={0} sx={{ p: 2.5, bgcolor: '#ffffff', border: '1px solid #e0e2db', borderRadius: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Paper elevation={0} sx={{ p: 2.5, bgcolor: '#ffffff', border: '1px solid #e0e2db', borderRadius: 0, display: 'flex', alignItems: 'center', gap: 2 }}>
             <Avatar sx={{ bgcolor: 'rgba(21, 101, 192, 0.1)', color: '#1565c0', width: 44, height: 44 }}>
               <LocationCityIcon />
             </Avatar>
@@ -419,7 +419,7 @@ export default function UsersPage() {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Paper elevation={0} sx={{ p: 2.5, bgcolor: '#ffffff', border: '1px solid #e0e2db', borderRadius: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Paper elevation={0} sx={{ p: 2.5, bgcolor: '#ffffff', border: '1px solid #e0e2db', borderRadius: 0, display: 'flex', alignItems: 'center', gap: 2 }}>
             <Avatar sx={{ bgcolor: 'rgba(46, 125, 50, 0.1)', color: '#2e7d32', width: 44, height: 44 }}>
               <CheckCircleOutlineIcon />
             </Avatar>
@@ -436,7 +436,7 @@ export default function UsersPage() {
       </Grid>
 
       {/* Search & Filter Toolbar */}
-      <Paper elevation={0} sx={{ p: 2, bgcolor: '#ffffff', borderRadius: 2.5, border: '1px solid #e0e2db', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justify: 'space-between', gap: 2 }}>
+      <Paper elevation={0} sx={{ p: 2, bgcolor: '#ffffff', borderRadius: 0, border: '1px solid #e0e2db', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justify: 'space-between', gap: 2 }}>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, flexGrow: 1 }}>
           <TextField
             size="small"
@@ -453,7 +453,7 @@ export default function UsersPage() {
             sx={{
               width: { xs: '100%', sm: 300 },
               '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
+                borderRadius: 0,
                 bgcolor: '#faf8f5',
               },
             }}
@@ -461,7 +461,7 @@ export default function UsersPage() {
 
           <FormControl size="small" sx={{ minWidth: 160 }}>
             <InputLabel>Role Filter</InputLabel>
-            <Select value={roleFilter} label="Role Filter" onChange={(e) => setRoleFilter(e.target.value)} sx={{ borderRadius: 2 }}>
+            <Select value={roleFilter} label="Role Filter" onChange={(e) => setRoleFilter(e.target.value)} sx={{ borderRadius: 0 }}>
               <MenuItem value="ALL">All Roles</MenuItem>
               <MenuItem value="SYSTEM_ADMIN">SYSTEM_ADMIN</MenuItem>
               <MenuItem value="CENTRAL_STORE">CENTRAL_STORE</MenuItem>
@@ -474,7 +474,7 @@ export default function UsersPage() {
 
           <FormControl size="small" sx={{ minWidth: 150 }}>
             <InputLabel>Status</InputLabel>
-            <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value)} sx={{ borderRadius: 2 }}>
+            <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value)} sx={{ borderRadius: 0 }}>
               <MenuItem value="ALL">All Statuses</MenuItem>
               <MenuItem value="ACTIVE">Active Only</MenuItem>
               <MenuItem value="INACTIVE">Deactivated Only</MenuItem>
@@ -495,7 +495,7 @@ export default function UsersPage() {
         component={Paper}
         elevation={0}
         sx={{
-          borderRadius: 3,
+          borderRadius: 0,
           border: '1px solid #e0e2db',
           bgcolor: '#ffffff',
           overflow: 'hidden',
@@ -704,7 +704,7 @@ export default function UsersPage() {
 
       {/* Provision User Account Modal */}
       {showCreateModal && (
-        <Dialog open maxWidth="sm" fullWidth onClose={() => setShowCreateModal(false)} PaperProps={{ sx: { borderRadius: 3 } }}>
+        <Dialog open maxWidth="sm" fullWidth onClose={() => setShowCreateModal(false)} PaperProps={{ sx: { borderRadius: 0 } }}>
           <DialogTitle sx={{ fontWeight: 900, color: '#191c1a', pb: 1 }}>Provision New User Account</DialogTitle>
           <Divider />
           <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 2.5 }}>
@@ -769,7 +769,7 @@ export default function UsersPage() {
 
       {/* Edit User Account Modal */}
       {editingUser && (
-        <Dialog open maxWidth="sm" fullWidth onClose={() => setEditingUser(null)} PaperProps={{ sx: { borderRadius: 3 } }}>
+        <Dialog open maxWidth="sm" fullWidth onClose={() => setEditingUser(null)} PaperProps={{ sx: { borderRadius: 0 } }}>
           <DialogTitle sx={{ fontWeight: 900, color: '#191c1a', pb: 1 }}>
             Edit User Account (@{editingUser.username})
           </DialogTitle>
@@ -851,7 +851,7 @@ export default function UsersPage() {
 
       {/* Delete User Confirmation Dialog */}
       {deletingUser && (
-        <Dialog open maxWidth="xs" fullWidth onClose={() => setDeletingUser(null)} PaperProps={{ sx: { borderRadius: 3 } }}>
+        <Dialog open maxWidth="xs" fullWidth onClose={() => setDeletingUser(null)} PaperProps={{ sx: { borderRadius: 0 } }}>
           <DialogTitle sx={{ fontWeight: 900, color: '#c62828', display: 'flex', alignItems: 'center', gap: 1 }}>
             <DeleteIcon color="error" /> Confirm Access Removal
           </DialogTitle>

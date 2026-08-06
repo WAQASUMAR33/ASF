@@ -258,7 +258,7 @@ export default function LoginPage() {
               </Typography>
 
               {error && (
-                <Alert severity="error" sx={{ mb: 3, fontSize: '0.75rem', borderRadius: 2 }}>
+                <Alert severity="error" sx={{ mb: 3, fontSize: '0.75rem', borderRadius: 0 }}>
                   {error}
                 </Alert>
               )}
@@ -338,7 +338,7 @@ export default function LoginPage() {
                     width: 'fit-content',
                     px: 4,
                     alignSelf: 'flex-start',
-                    borderRadius: '8px',
+                    borderRadius: 0,
                     '&:hover': { bgcolor: '#1b4d2e' },
                   }}
                 >
@@ -379,7 +379,7 @@ export default function LoginPage() {
                   color: '#ffffff',
                   fontWeight: 800,
                   fontSize: '0.85rem',
-                  borderRadius: '10px',
+                  borderRadius: 0,
                   boxShadow: '0 4px 14px rgba(45, 106, 79, 0.25)',
                   '&:hover': { bgcolor: '#1b4332' },
                 }}

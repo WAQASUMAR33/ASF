@@ -205,12 +205,12 @@ export default function ExecutiveDashboardPage() {
                     <XAxis dataKey="stationCode" stroke="#56615b" tick={{ fontSize: 11 }} />
                     <YAxis stroke="#56615b" tick={{ fontSize: 11 }} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e0e2db', borderRadius: '8px', fontSize: '12px' }}
+                      contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e0e2db', borderRadius: '0px', fontSize: '12px' }}
                       itemStyle={{ color: '#191c1a' }}
                     />
                     <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                    <Bar dataKey="demanded" name="Demanded Quantity" fill="#1e5631" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="fulfilled" name="Issued Stock" fill="#2d6a4f" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="demanded" name="Demanded Quantity" fill="#1e5631" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="fulfilled" name="Issued Stock" fill="#2d6a4f" radius={[0, 0, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -259,7 +259,7 @@ export default function ExecutiveDashboardPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e0e2db', borderRadius: '8px', fontSize: '12px' }}
+                      contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e0e2db', borderRadius: '0px', fontSize: '12px' }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
