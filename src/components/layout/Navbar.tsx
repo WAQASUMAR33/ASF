@@ -32,10 +32,14 @@ export default function Navbar({ user }: NavbarProps) {
   const [loggingOut, setLoggingOut] = useState(false);
 
   const handleLogout = async () => {
-    setLoggingOut(true);
-    await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/login');
-    router.refresh();
+    try {
+      setLoggingOut(true);
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Sign out error:', error);
+      window.location.href = '/login';
+    }
   };
 
   const roleColors: Record<string, 'primary' | 'secondary' | 'success' | 'warning' | 'info' | 'error'> = {
