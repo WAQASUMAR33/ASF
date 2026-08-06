@@ -56,11 +56,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Only STORE_CLERK can draft station demands' }, { status: 403 });
     }
 
-    if (!user.stationId) {
-      return NextResponse.json({ error: 'User is not assigned to any ASF Station' }, { status: 400 });
-    }
+    const { fiscalYear, items, stationId: targetStationId } = await request.json();
 
-    const { fiscalYear, items } = await request.json(); // items: Array<{ itemId, sizeId, customMeasurement, demandedQuantity, lastIssuedDate }>
+    const effectiveStationId = user.stationId || targetStationId;
+
+    if (!effectiveStationId) {
+      return NextResponse.json({ error: 'User is not assigned to any ASF Station. Please select a Target Station.' }, { status: 400 });
+    }
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: 'At least one item is required in demand' }, { status: 400 });
@@ -68,14 +70,14 @@ export async function POST(request: Request) {
 
     // Fetch station manpower
     const manpower = await prisma.stationManpower.findUnique({
-      where: { stationId: user.stationId },
+      where: { stationId: effectiveStationId },
     });
 
     // Generate unique demand number e.g. DEM-KHI-2026-0042
     const demandCount = await prisma.stationDemand.count({
-      where: { stationId: user.stationId },
+      where: { stationId: effectiveStationId },
     });
-    const stationObj = await prisma.station.findUnique({ where: { id: user.stationId } });
+    const stationObj = await prisma.station.findUnique({ where: { id: effectiveStationId } });
     const demandNumber = `DEM-${stationObj?.code || 'STN'}-${fiscalYear || new Date().getFullYear()}-${String(demandCount + 1).padStart(4, '0')}`;
 
     // Process & Validate each demand item against Entitlement Ceiling & Lifecycle Lock
@@ -126,7 +128,7 @@ export async function POST(request: Request) {
     const demand = await prisma.stationDemand.create({
       data: {
         demandNumber,
-        stationId: user.stationId,
+        stationId: effectiveStationId,
         fiscalYear: parseInt(fiscalYear, 10) || new Date().getFullYear(),
         status: DemandStatus.DRAFT,
         createdById: user.id,

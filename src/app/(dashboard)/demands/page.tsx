@@ -47,6 +47,7 @@ export default function DemandsPage() {
   const [filterStation, setFilterStation] = useState('ALL');
 
   // Wizard state
+  const [targetStationId, setTargetStationId] = useState('');
   const [fiscalYear, setFiscalYear] = useState(new Date().getFullYear());
   const [selectedItems, setSelectedItems] = useState<any[]>([
     { itemId: '', sizeId: '', customMeasurement: '', demandedQuantity: 1, lastIssuedDate: '' },
@@ -73,6 +74,9 @@ export default function DemandsPage() {
       setItemsCatalog(cData.items || []);
       setCurrentUser(uData.user || null);
       setStations(sData.stations || []);
+      if (sData.stations?.length > 0 && !targetStationId) {
+        setTargetStationId(uData.user?.stationId || sData.stations[0].id);
+      }
     } catch (err) {
       console.error('Error fetching demand data', err);
     } finally {
@@ -115,6 +119,7 @@ export default function DemandsPage() {
         body: JSON.stringify({
           fiscalYear,
           items: selectedItems,
+          stationId: currentUser?.stationId || targetStationId,
         }),
       });
 
@@ -384,14 +389,38 @@ export default function DemandsPage() {
             {wizardError && <Alert severity="error">{wizardError}</Alert>}
 
             <Box component="form" onSubmit={handleCreateDemand} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <TextField
-                label="Fiscal Year"
-                type="number"
-                size="small"
-                value={fiscalYear}
-                onChange={(e) => setFiscalYear(parseInt(e.target.value, 10))}
-                sx={{ width: 200 }}
-              />
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Fiscal Year"
+                    type="number"
+                    size="small"
+                    value={fiscalYear}
+                    onChange={(e) => setFiscalYear(parseInt(e.target.value, 10))}
+                  />
+                </Grid>
+
+                {(!currentUser?.stationId || ['SYSTEM_ADMIN', 'DD_PROCUREMENT', 'CENTRAL_STORE'].includes(currentUser?.role)) && (
+                  <Grid item xs={12} sm={6}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Target ASF Station</InputLabel>
+                      <Select
+                        value={targetStationId}
+                        label="Target ASF Station"
+                        onChange={(e) => setTargetStationId(e.target.value)}
+                        required
+                      >
+                        {stations.map((st) => (
+                          <MenuItem key={st.id} value={st.id}>
+                            {st.name} ({st.code})
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                )}
+              </Grid>
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="subtitle2" sx={{ color: 'primary.main', fontWeight: 800 }}>
