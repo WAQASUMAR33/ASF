@@ -67,14 +67,14 @@ export default function Sidebar({ userRole = 'STORE_CLERK' }: SidebarProps) {
       label: 'Station Manpower Matrix',
       href: '/manpower',
       icon: LocationCityIcon,
-      roles: ['STORE_OFFICER', 'CSO', 'DD_PROCUREMENT', 'CENTRAL_STORE', 'SYSTEM_ADMIN'],
+      roles: ['DD_PROCUREMENT', 'SYSTEM_ADMIN'],
     },
     {
       label: 'User & Role Security',
       href: '/users',
       icon: AdminPanelSettingsIcon,
       badge: 'Admin',
-      roles: ['SYSTEM_ADMIN'],
+      roles: ['CENTRAL_STORE', 'DD_PROCUREMENT', 'SYSTEM_ADMIN'],
     },
   ];
 

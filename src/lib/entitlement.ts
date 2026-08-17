@@ -9,10 +9,14 @@ export interface EntitlementCalculationResult {
 
 export interface LifecycleLockResult {
   isLocked: boolean;
-  lastIssuedDate: Date | null;
+  lastReceiptDate: Date | null;
+  lastIssuedDate?: Date | null; // Compatibility alias
   lifeCycleYears: number;
   nextEligibleDate: Date | null;
   daysRemaining: number;
+  authorizedQty: number;
+  lastReceivedQty: number;
+  netMaxAllowed: number;
   message?: string;
 }
 
@@ -53,49 +57,67 @@ export function calculateMaxEntitlement(
 }
 
 /**
- * Enforces Lifecycle Lock Rule:
- * Re-orders are blocked if the replacement period (e.g. 1, 2, 4 years) has not elapsed since last issuance date.
+ * Enforces Replacement Lifecycle Lock & Partial Entitlement Ceiling Rule:
+ * Re-orders calculate net max allowed = Authorized Qty - Last Received Qty if within active lifecycle period.
  */
 export function checkLifecycleLock(
-  lastIssuedDate: Date | string | null | undefined,
-  lifeCycleYears: number
+  lastReceiptDate: Date | string | null | undefined,
+  lifeCycleYears: number,
+  authorizedQty: number = 0,
+  lastReceivedQty: number = 0
 ): LifecycleLockResult {
-  if (!lastIssuedDate) {
+  const parsedAuthQty = Number(authorizedQty) || 0;
+  const parsedReceivedQty = Number(lastReceivedQty) || 0;
+
+  if (!lastReceiptDate) {
     return {
       isLocked: false,
+      lastReceiptDate: null,
       lastIssuedDate: null,
       lifeCycleYears,
       nextEligibleDate: null,
       daysRemaining: 0,
+      authorizedQty: parsedAuthQty,
+      lastReceivedQty: 0,
+      netMaxAllowed: parsedAuthQty,
     };
   }
 
-  const lastDate = new Date(lastIssuedDate);
+  const lastDate = new Date(lastReceiptDate);
   const now = new Date();
 
-  // Next eligible date = lastIssuedDate + lifeCycleYears
+  // Next eligible full re-order date = lastReceiptDate + lifeCycleYears
   const nextEligibleDate = new Date(lastDate);
   nextEligibleDate.setFullYear(nextEligibleDate.getFullYear() + lifeCycleYears);
 
-  if (now < nextEligibleDate) {
-    const diffTime = nextEligibleDate.getTime() - now.getTime();
-    const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const withinLifecycle = now < nextEligibleDate;
+  const diffTime = nextEligibleDate.getTime() - now.getTime();
+  const daysRemaining = withinLifecycle ? Math.ceil(diffTime / (1000 * 60 * 60 * 24)) : 0;
 
-    return {
-      isLocked: true,
-      lastIssuedDate: lastDate,
-      lifeCycleYears,
-      nextEligibleDate,
-      daysRemaining,
-      message: `Lifecycle Lock Active: Item replacement cycle is ${lifeCycleYears} year(s). Next eligible re-order date is ${nextEligibleDate.toISOString().split('T')[0]} (${daysRemaining} days remaining).`,
-    };
+  // If within active lifecycle, Net Max Allowed = Authorized Qty - Last Received Qty
+  const netMaxAllowed = withinLifecycle
+    ? Math.max(0, parsedAuthQty - parsedReceivedQty)
+    : parsedAuthQty;
+
+  const isLocked = withinLifecycle && netMaxAllowed <= 0;
+
+  let message = undefined;
+  if (isLocked) {
+    message = `Lifecycle Lock Active: Full entitlement (${parsedReceivedQty}/${parsedAuthQty}) received on ${lastDate.toISOString().split('T')[0]}. Next eligible full re-order date is ${nextEligibleDate.toISOString().split('T')[0]}.`;
+  } else if (withinLifecycle && parsedReceivedQty > 0) {
+    message = `Partial Entitlement: ${parsedAuthQty} Authorized - ${parsedReceivedQty} Received = ${netMaxAllowed} Net Eligible.`;
   }
 
   return {
-    isLocked: false,
+    isLocked,
+    lastReceiptDate: lastDate,
     lastIssuedDate: lastDate,
     lifeCycleYears,
     nextEligibleDate,
-    daysRemaining: 0,
+    daysRemaining,
+    authorizedQty: parsedAuthQty,
+    lastReceivedQty: parsedReceivedQty,
+    netMaxAllowed,
+    message,
   };
 }

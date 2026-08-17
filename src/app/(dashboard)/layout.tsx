@@ -15,7 +15,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f6f9] text-slate-900 flex flex-col">
+    <div className="min-h-screen bg-[#faf8f5] text-slate-900 flex flex-col">
       <Navbar user={user} />
       <div className="flex flex-1">
         <Sidebar userRole={user.role} />

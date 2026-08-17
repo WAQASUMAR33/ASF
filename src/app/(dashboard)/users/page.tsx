@@ -618,10 +618,10 @@ export default function UsersPage() {
                         />
                       ) : (
                         <Chip
-                          icon={<BlockIcon sx={{ fontSize: '0.85rem !important', color: '#c62828 !important' }} />}
-                          label="Deactivated"
+                          icon={<BlockIcon sx={{ fontSize: '0.85rem !important', color: '#d97706 !important' }} />}
+                          label="Pending DD Approval"
                           size="small"
-                          sx={{ fontWeight: 800, fontSize: '0.7rem', bgcolor: '#ffebee', color: '#c62828', border: '1px solid #ef9a9a' }}
+                          sx={{ fontWeight: 800, fontSize: '0.7rem', bgcolor: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' }}
                         />
                       )}
                     </TableCell>
@@ -645,6 +645,18 @@ export default function UsersPage() {
                     {/* Actions */}
                     <TableCell sx={{ textAlign: 'center' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                        {!userActive && (currentUserMe?.role === 'DD_PROCUREMENT' || currentUserMe?.role === 'SYSTEM_ADMIN') && (
+                          <Button
+                            variant="contained"
+                            color="success"
+                            size="small"
+                            onClick={() => handleToggleActive(u)}
+                            sx={{ fontWeight: 800, fontSize: '0.7rem', py: 0.4 }}
+                          >
+                            Approve Account
+                          </Button>
+                        )}
+
                         <Tooltip title="Edit User Access & Scope">
                           <IconButton
                             size="small"
@@ -713,20 +725,20 @@ export default function UsersPage() {
             <Box component="form" id="create-user-form" onSubmit={handleCreateUser} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Grid container spacing={2}>
                 <Grid item xs={6}>
-                  <TextField fullWidth size="small" label="Username" required value={username} onChange={(e) => setUsername(e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                  <TextField fullWidth size="small" label="Username" required value={username} onChange={(e) => setUsername(e.target.value)} />
                 </Grid>
                 <Grid item xs={6}>
-                  <TextField fullWidth size="small" label="Full Name" required value={fullName} onChange={(e) => setFullName(e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                  <TextField fullWidth size="small" label="Full Name" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
                 </Grid>
               </Grid>
 
-              <TextField fullWidth size="small" label="Email Address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+              <TextField fullWidth size="small" label="Email Address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
 
               <Grid container spacing={2}>
                 <Grid item xs={6}>
                   <FormControl fullWidth size="small">
                     <InputLabel>System Role</InputLabel>
-                    <Select value={role} label="System Role" onChange={(e) => setRole(e.target.value)} sx={{ borderRadius: 2 }}>
+                    <Select value={role} label="System Role" onChange={(e) => setRole(e.target.value)}>
                       <MenuItem value="STORE_CLERK">STORE_CLERK</MenuItem>
                       <MenuItem value="STORE_OFFICER">STORE_OFFICER</MenuItem>
                       <MenuItem value="CSO">CSO</MenuItem>
@@ -741,7 +753,7 @@ export default function UsersPage() {
                   <Grid item xs={6}>
                     <FormControl fullWidth size="small">
                       <InputLabel>Station Scope</InputLabel>
-                      <Select value={stationId} label="Station Scope" onChange={(e) => setStationId(e.target.value)} sx={{ borderRadius: 2 }}>
+                      <Select value={stationId} label="Station Scope" onChange={(e) => setStationId(e.target.value)}>
                         {stations.map((s) => (
                           <MenuItem key={s.id} value={s.id}>
                             {s.name} ({s.code})
@@ -753,14 +765,14 @@ export default function UsersPage() {
                 )}
               </Grid>
 
-              <TextField fullWidth size="small" label="Initial Password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+              <TextField fullWidth size="small" label="Initial Password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
             </Box>
           </DialogContent>
           <DialogActions sx={{ p: 2.5 }}>
-            <Button variant="outlined" onClick={() => setShowCreateModal(false)} sx={{ borderRadius: 2 }}>
+            <Button variant="outlined" onClick={() => setShowCreateModal(false)}>
               Cancel
             </Button>
-            <Button type="submit" form="create-user-form" variant="contained" disabled={saving} sx={{ bgcolor: '#1e5631', color: '#ffffff', fontWeight: 800, borderRadius: 2, '&:hover': { bgcolor: '#153e23' } }}>
+            <Button type="submit" form="create-user-form" variant="contained" disabled={saving} sx={{ bgcolor: '#1e5631', color: '#ffffff', fontWeight: 800, '&:hover': { bgcolor: '#153e23' } }}>
               {saving ? 'Provisioning...' : 'Provision Account'}
             </Button>
           </DialogActions>
@@ -780,20 +792,20 @@ export default function UsersPage() {
             <Box component="form" id="edit-user-form" onSubmit={handleUpdateUser} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Grid container spacing={2}>
                 <Grid item xs={6}>
-                  <TextField fullWidth size="small" label="Username" disabled value={username} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                  <TextField fullWidth size="small" label="Username" disabled value={username} />
                 </Grid>
                 <Grid item xs={6}>
-                  <TextField fullWidth size="small" label="Full Name" required value={fullName} onChange={(e) => setFullName(e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                  <TextField fullWidth size="small" label="Full Name" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
                 </Grid>
               </Grid>
 
-              <TextField fullWidth size="small" label="Email Address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+              <TextField fullWidth size="small" label="Email Address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
 
               <Grid container spacing={2}>
                 <Grid item xs={6}>
                   <FormControl fullWidth size="small">
                     <InputLabel>System Role</InputLabel>
-                    <Select value={role} label="System Role" onChange={(e) => setRole(e.target.value)} sx={{ borderRadius: 2 }}>
+                    <Select value={role} label="System Role" onChange={(e) => setRole(e.target.value)}>
                       <MenuItem value="STORE_CLERK">STORE_CLERK</MenuItem>
                       <MenuItem value="STORE_OFFICER">STORE_OFFICER</MenuItem>
                       <MenuItem value="CSO">CSO</MenuItem>
@@ -808,7 +820,7 @@ export default function UsersPage() {
                   <Grid item xs={6}>
                     <FormControl fullWidth size="small">
                       <InputLabel>Station Scope</InputLabel>
-                      <Select value={stationId} label="Station Scope" onChange={(e) => setStationId(e.target.value)} sx={{ borderRadius: 2 }}>
+                      <Select value={stationId} label="Station Scope" onChange={(e) => setStationId(e.target.value)}>
                         {stations.map((s) => (
                           <MenuItem key={s.id} value={s.id}>
                             {s.name} ({s.code})
@@ -829,7 +841,6 @@ export default function UsersPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 helperText="Only fill if you want to reset password for this user."
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
 
               <FormControlLabel
@@ -839,10 +850,10 @@ export default function UsersPage() {
             </Box>
           </DialogContent>
           <DialogActions sx={{ p: 2.5 }}>
-            <Button variant="outlined" onClick={() => setEditingUser(null)} sx={{ borderRadius: 2 }}>
+            <Button variant="outlined" onClick={() => setEditingUser(null)}>
               Cancel
             </Button>
-            <Button type="submit" form="edit-user-form" variant="contained" disabled={saving} sx={{ bgcolor: '#1e5631', color: '#ffffff', fontWeight: 800, borderRadius: 2, '&:hover': { bgcolor: '#153e23' } }}>
+            <Button type="submit" form="edit-user-form" variant="contained" disabled={saving} sx={{ bgcolor: '#1e5631', color: '#ffffff', fontWeight: 800, '&:hover': { bgcolor: '#153e23' } }}>
               {saving ? 'Saving...' : 'Save User Access Changes'}
             </Button>
           </DialogActions>
@@ -865,10 +876,10 @@ export default function UsersPage() {
             </Typography>
           </DialogContent>
           <DialogActions sx={{ p: 2.5 }}>
-            <Button variant="outlined" onClick={() => setDeletingUser(null)} sx={{ borderRadius: 2 }}>
+            <Button variant="outlined" onClick={() => setDeletingUser(null)}>
               Cancel
             </Button>
-            <Button variant="contained" color="error" disabled={saving} onClick={handleConfirmDelete} sx={{ fontWeight: 800, borderRadius: 2 }}>
+            <Button variant="contained" color="error" disabled={saving} onClick={handleConfirmDelete} sx={{ fontWeight: 800 }}>
               {saving ? 'Removing...' : 'Remove User Account'}
             </Button>
           </DialogActions>

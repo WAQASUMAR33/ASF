@@ -183,7 +183,7 @@ export default function CatalogPage() {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', height: 400, alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-        <CircularProgress sx={{ color: '#5b2c6f' }} />
+        <CircularProgress sx={{ color: '#1e5631' }} />
         <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
           Loading Kit Item Catalog (MDM)...
         </Typography>
@@ -193,26 +193,129 @@ export default function CatalogPage() {
 
   const isHQ = ['DD_PROCUREMENT', 'CENTRAL_STORE', 'SYSTEM_ADMIN'].includes(currentUser?.role);
 
+  // Central Stock Modal State
+  const [showStockModal, setShowStockModal] = useState(false);
+  const [selectedStockItemId, setSelectedStockItemId] = useState('');
+  const [selectedStockSizeId, setSelectedStockSizeId] = useState('');
+  const [stockAvailableQty, setStockAvailableQty] = useState<number>(0);
+  const [updatingStock, setUpdatingStock] = useState(false);
+
+  // Category Management Modal State
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
+  const [newCatDesc, setNewCatDesc] = useState('');
+  const [savingCat, setSavingCat] = useState(false);
+
+  const handleUpdateCentralStock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUpdatingStock(true);
+    try {
+      const res = await fetch('/api/central-stock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          itemId: selectedStockItemId,
+          sizeId: selectedStockSizeId || null,
+          availableQty: stockAvailableQty,
+        }),
+      });
+
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error || 'Failed to update central stock');
+      }
+
+      setShowStockModal(false);
+      fetchCatalog();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setUpdatingStock(false);
+    }
+  };
+
+  const handleCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingCat(true);
+    try {
+      const res = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newCatName, description: newCatDesc }),
+      });
+
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error || 'Failed to create category');
+      }
+
+      setNewCatName('');
+      setNewCatDesc('');
+      fetchCatalog();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setSavingCat(false);
+    }
+  };
+
+  const handleDeleteCategory = async (catId: string) => {
+    if (!confirm('Are you sure you want to delete this category?')) return;
+    try {
+      const res = await fetch(`/api/categories?id=${catId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error || 'Failed to delete category');
+      }
+      fetchCatalog();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
   const filteredItems = items.filter(
-    (i) =>
-      i.name.toLowerCase().includes(search.toLowerCase()) ||
-      i.itemCode.toLowerCase().includes(search.toLowerCase())
+    (item) =>
+      item.name.toLowerCase().includes(search.toLowerCase()) ||
+      item.itemCode.toLowerCase().includes(search.toLowerCase()) ||
+      item.category?.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justify: 'space-between', gap: 2, borderBottom: '1px solid #e5e7eb', pb: 2 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justify: 'space-between', gap: 2, borderBottom: '1px solid #e0e2db', pb: 2 }}>
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 900, color: '#5b2c6f', display: 'flex', alignItems: 'center', gap: 1 }}>
-            <CategoryIcon sx={{ color: '#5b2c6f' }} /> Kit Item Catalog (MDM)
+          <Typography variant="h5" sx={{ fontWeight: 900, color: '#1e5631', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CategoryIcon sx={{ color: '#1e5631' }} /> Kit Item Catalog (MDM) & Central Warehouse Stock
           </Typography>
           <Typography variant="caption" sx={{ color: '#666666' }}>
-            Master Catalog, Dynamic Size Chart Engine, Replacement Life-Cycle Rules & Specifications
+            Master Catalog, Central Available Stock Management, Dynamic Size Charts & Specifications
           </Typography>
         </Box>
 
         {isHQ && (
-          <Box sx={{ display: 'flex', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+            <Button
+              variant="outlined"
+              color="primary"
+              size="small"
+              onClick={() => setShowCategoryModal(true)}
+            >
+              Category Management
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              size="small"
+              onClick={() => {
+                if (items.length > 0) {
+                  setSelectedStockItemId(items[0].id);
+                  setStockAvailableQty(items[0].centralStock?.[0]?.availableQty || 0);
+                }
+                setShowStockModal(true);
+              }}
+            >
+              Update Central Stock
+            </Button>
             <Button
               variant="outlined"
               color="error"
@@ -224,7 +327,7 @@ export default function CatalogPage() {
             </Button>
             <Button
               variant="contained"
-              sx={{ bgcolor: '#5b2c6f', '&:hover': { bgcolor: '#4a235a' } }}
+              sx={{ bgcolor: '#1e5631', '&:hover': { bgcolor: '#1b4d2e' } }}
               startIcon={<AddIcon />}
               onClick={handleOpenCreate}
             >
@@ -267,7 +370,7 @@ export default function CatalogPage() {
                     No kit items found in catalog.
                   </Typography>
                   {isHQ && (
-                    <Button variant="contained" size="small" sx={{ bgcolor: '#5b2c6f' }} onClick={handleOpenCreate}>
+                    <Button variant="contained" size="small" sx={{ bgcolor: '#1e5631', '&:hover': { bgcolor: '#1b4d2e' } }} onClick={handleOpenCreate}>
                       Add Your First Kit Item
                     </Button>
                   )}
@@ -276,7 +379,7 @@ export default function CatalogPage() {
             ) : (
               filteredItems.map((item) => (
                 <TableRow key={item.id} hover>
-                  <TableCell sx={{ fontFamily: 'monospace', fontWeight: 800, color: '#5b2c6f' }}>
+                  <TableCell sx={{ fontFamily: 'monospace', fontWeight: 800, color: '#1e5631' }}>
                     {item.itemCode}
                   </TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>{item.name}</TableCell>
@@ -297,7 +400,7 @@ export default function CatalogPage() {
                   {isHQ && (
                     <TableCell align="right">
                       <Tooltip title="Edit Item">
-                        <IconButton size="small" onClick={() => handleOpenEdit(item)} sx={{ color: '#5b2c6f' }}>
+                        <IconButton size="small" onClick={() => handleOpenEdit(item)} sx={{ color: '#1e5631' }}>
                           <EditIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
@@ -317,7 +420,7 @@ export default function CatalogPage() {
 
       {showModal && (
         <Dialog open maxWidth="sm" fullWidth onClose={() => setShowModal(false)}>
-          <DialogTitle sx={{ fontWeight: 800, color: '#5b2c6f' }}>
+          <DialogTitle sx={{ fontWeight: 800, color: '#1e5631' }}>
             {editingItem ? 'Edit Kit Item Entry' : 'Create Kit Item Entry'}
           </DialogTitle>
           <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
@@ -435,12 +538,125 @@ export default function CatalogPage() {
 
               <DialogActions sx={{ px: 0, pt: 2 }}>
                 <Button onClick={() => setShowModal(false)}>Cancel</Button>
-                <Button type="submit" variant="contained" disabled={saving} sx={{ bgcolor: '#5b2c6f' }}>
+                <Button type="submit" variant="contained" disabled={saving} sx={{ bgcolor: '#1e5631', '&:hover': { bgcolor: '#1b4d2e' } }}>
                   {saving ? 'Saving...' : editingItem ? 'Update Kit Item' : 'Save Kit Item'}
                 </Button>
               </DialogActions>
             </Box>
           </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Central Stock Update Dialog */}
+      {showStockModal && (
+        <Dialog open maxWidth="xs" fullWidth onClose={() => setShowStockModal(false)}>
+          <DialogTitle sx={{ fontWeight: 800, color: '#1e5631' }}>
+            Update Central Stock Quantity
+          </DialogTitle>
+          <DialogContent dividers>
+            <Box component="form" onSubmit={handleUpdateCentralStock} sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Kit Item</InputLabel>
+                <Select
+                  value={selectedStockItemId}
+                  label="Kit Item"
+                  onChange={(e) => {
+                    const itemId = e.target.value;
+                    setSelectedStockItemId(itemId);
+                    const it = items.find((i) => i.id === itemId);
+                    setStockAvailableQty(it?.centralStock?.[0]?.availableQty || 0);
+                  }}
+                  required
+                >
+                  {items.map((it) => (
+                    <MenuItem key={it.id} value={it.id}>
+                      {it.itemCode} - {it.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <TextField
+                fullWidth
+                size="small"
+                label="Available Stock Quantity"
+                type="number"
+                required
+                value={stockAvailableQty}
+                onChange={(e) => setStockAvailableQty(parseInt(e.target.value, 10) || 0)}
+              />
+
+              <DialogActions sx={{ px: 0, pt: 1 }}>
+                <Button onClick={() => setShowStockModal(false)}>Cancel</Button>
+                <Button type="submit" variant="contained" disabled={updatingStock} sx={{ bgcolor: '#1e5631', '&:hover': { bgcolor: '#1b4d2e' } }}>
+                  {updatingStock ? 'Saving...' : 'Update Stock'}
+                </Button>
+              </DialogActions>
+            </Box>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Category Management Dialog */}
+      {showCategoryModal && (
+        <Dialog open maxWidth="sm" fullWidth onClose={() => setShowCategoryModal(false)}>
+          <DialogTitle sx={{ fontWeight: 800, color: '#1e5631' }}>
+            Category Management
+          </DialogTitle>
+          <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* Create Form */}
+            <Box component="form" onSubmit={handleCreateCategory} sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+              <TextField
+                size="small"
+                label="Category Name"
+                required
+                value={newCatName}
+                onChange={(e) => setNewCatName(e.target.value)}
+                sx={{ flexGrow: 1 }}
+              />
+              <TextField
+                size="small"
+                label="Description (Optional)"
+                value={newCatDesc}
+                onChange={(e) => setNewCatDesc(e.target.value)}
+                sx={{ flexGrow: 1 }}
+              />
+              <Button type="submit" variant="contained" disabled={savingCat} sx={{ bgcolor: '#1e5631', py: 0.9 }}>
+                Add Category
+              </Button>
+            </Box>
+
+            {/* Categories List Table */}
+            <TableContainer component={Paper} variant="outlined">
+              <Table size="small">
+                <TableHead sx={{ bgcolor: '#1e5631' }}>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 800, color: '#ffffff' }}>Category Name</TableCell>
+                    <TableCell sx={{ fontWeight: 800, color: '#ffffff' }}>Description</TableCell>
+                    <TableCell sx={{ fontWeight: 800, color: '#ffffff' }}>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {categories.map((c) => (
+                    <TableRow key={c.id}>
+                      <TableCell sx={{ fontWeight: 700, color: '#1e5631' }}>{c.name}</TableCell>
+                      <TableCell>{c.description || '—'}</TableCell>
+                      <TableCell>
+                        <IconButton size="small" color="error" onClick={() => handleDeleteCategory(c.id)}>
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button variant="contained" color="primary" onClick={() => setShowCategoryModal(false)}>
+              Close
+            </Button>
+          </DialogActions>
         </Dialog>
       )}
     </Box>

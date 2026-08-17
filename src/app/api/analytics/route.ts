@@ -33,11 +33,27 @@ export async function GET(request: Request) {
       },
     });
 
-    // KPI 3: Total Stations Count & Total Manpower
+    // KPI 3: Station Headcount (for Station Users) vs Total National Manpower
     const totalStations = await prisma.station.count({ where: { isActive: true } });
     const manpowerAggregate = await prisma.stationManpower.aggregate({
       _sum: { totalHeld: true, heldMale: true, heldFemale: true },
     });
+
+    let stationManpower = null;
+    let stationCode = null;
+    let stationName = null;
+
+    if (user.stationId) {
+      const st = await prisma.station.findUnique({
+        where: { id: user.stationId },
+        include: { manpower: true },
+      });
+      if (st) {
+        stationCode = st.code;
+        stationName = st.name;
+        stationManpower = st.manpower;
+      }
+    }
 
     // KPI 4: Shortfall comparison per station (Demanded vs Central Stock Available)
     const approvedDemandItems = await prisma.stationDemandItem.findMany({
@@ -93,11 +109,19 @@ export async function GET(request: Request) {
       quantity: s._sum.demandedQuantity || 0,
     }));
 
+    const isStationScoped = !!user.stationId && ['STORE_CLERK', 'STORE_OFFICER', 'CSO'].includes(user.role);
+
     return NextResponse.json({
       metrics: {
         activeDemandsCount,
         issuedDistributionsCount,
         totalStations,
+        isStationScoped,
+        stationCode,
+        stationName,
+        stationHeadcount: stationManpower?.totalHeld || 0,
+        stationMale: stationManpower?.heldMale || 0,
+        stationFemale: stationManpower?.heldFemale || 0,
         totalHeadcount: manpowerAggregate._sum.totalHeld || 0,
         maleHeadcount: manpowerAggregate._sum.heldMale || 0,
         femaleHeadcount: manpowerAggregate._sum.heldFemale || 0,

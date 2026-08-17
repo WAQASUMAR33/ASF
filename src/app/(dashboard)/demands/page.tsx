@@ -50,7 +50,7 @@ export default function DemandsPage() {
   const [targetStationId, setTargetStationId] = useState('');
   const [fiscalYear, setFiscalYear] = useState(new Date().getFullYear());
   const [selectedItems, setSelectedItems] = useState<any[]>([
-    { itemId: '', sizeId: '', customMeasurement: '', demandedQuantity: 1, lastIssuedDate: '' },
+    { itemId: '', sizeId: '', customMeasurement: '', demandedQuantity: 1, lastReceiptDate: '', lastReceivedQty: 0 },
   ]);
   const [wizardError, setWizardError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -91,7 +91,7 @@ export default function DemandsPage() {
   const handleAddItemRow = () => {
     setSelectedItems([
       ...selectedItems,
-      { itemId: '', sizeId: '', customMeasurement: '', demandedQuantity: 1, lastIssuedDate: '' },
+      { itemId: '', sizeId: '', customMeasurement: '', demandedQuantity: 1, lastReceiptDate: '', lastReceivedQty: 0 },
     ]);
   };
 
@@ -182,12 +182,12 @@ export default function DemandsPage() {
     );
   }
 
-  const isClerk = currentUser?.role === 'STORE_CLERK' || currentUser?.role === 'SYSTEM_ADMIN';
+  const canDraft = ['STORE_CLERK', 'STORE_OFFICER', 'SYSTEM_ADMIN'].includes(currentUser?.role);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 2, borderBottom: '1px solid rgba(255, 255, 255, 0.08)', pb: 2 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 2, borderBottom: '1px solid #e0e2db', pb: 2 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 900, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1 }}>
             <AssignmentIcon color="primary" /> Station Demand Lifecycle
@@ -211,7 +211,7 @@ export default function DemandsPage() {
             </FormControl>
           )}
 
-          {isClerk && (
+          {canDraft && (
             <Button
               variant="contained"
               color="primary"
@@ -301,12 +301,12 @@ export default function DemandsPage() {
 
             <TableContainer component={Paper} variant="outlined">
               <Table size="small">
-                <TableHead sx={{ bgcolor: '#091526' }}>
+                <TableHead sx={{ bgcolor: '#1e5631' }}>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 700 }}>Kit Item</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Size / Spec</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Max Entitlement</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Demanded Qty</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: '#ffffff' }}>Kit Item</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: '#ffffff' }}>Size / Spec</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: '#ffffff' }}>Max Entitlement</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: '#ffffff' }}>Demanded Qty</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -323,7 +323,7 @@ export default function DemandsPage() {
             </TableContainer>
           </DialogContent>
 
-          <DialogActions sx={{ p: 2 }}>
+          <DialogActions sx={{ p: 2, gap: 1 }}>
             {currentUser?.role === 'STORE_CLERK' && (selectedDemand.status === 'DRAFT' || selectedDemand.status === 'RETURNED_TO_CLERK') && (
               <Button
                 variant="contained"
@@ -334,7 +334,7 @@ export default function DemandsPage() {
               </Button>
             )}
 
-            {currentUser?.role === 'STORE_OFFICER' && selectedDemand.status === 'PENDING_STORE_OFFICER' && (
+            {currentUser?.role === 'STORE_OFFICER' && (selectedDemand.status === 'PENDING_STORE_OFFICER' || selectedDemand.status === 'DRAFT' || selectedDemand.status === 'RETURNED_TO_CLERK') && (
               <>
                 <Button
                   variant="outlined"
@@ -349,7 +349,7 @@ export default function DemandsPage() {
                 <Button
                   variant="contained"
                   color="success"
-                  onClick={() => handleStateTransition(selectedDemand.id, 'PENDING_CSO', 'Approved by Store Officer')}
+                  onClick={() => handleStateTransition(selectedDemand.id, 'PENDING_CSO', 'Approved & Endorsed by Store Officer')}
                 >
                   Approve & Forward to CSO
                 </Button>
@@ -360,9 +360,19 @@ export default function DemandsPage() {
               <>
                 <Button
                   variant="outlined"
+                  color="warning"
+                  onClick={() => {
+                    const reason = prompt('Enter return reason for Store Officer:');
+                    if (reason) handleStateTransition(selectedDemand.id, 'PENDING_STORE_OFFICER', reason);
+                  }}
+                >
+                  Return to Store Officer
+                </Button>
+                <Button
+                  variant="outlined"
                   color="error"
                   onClick={() => {
-                    const reason = prompt('Enter return reason for clerk:');
+                    const reason = prompt('Enter return reason for Clerk:');
                     if (reason) handleStateTransition(selectedDemand.id, 'RETURNED_TO_CLERK', reason);
                   }}
                 >
@@ -433,14 +443,26 @@ export default function DemandsPage() {
 
               {selectedItems.map((row, idx) => {
                 const selectedCatalogItem = itemsCatalog.find((i) => i.id === row.itemId);
+                const targetSt = stations.find((s) => s.id === (currentUser?.stationId || targetStationId));
+                const totalManpower = targetSt?.manpower?.totalHeld || 1000;
+                const scale = Number(selectedCatalogItem?.scaleOfIssue) || 1.0;
+                const authCeiling = Math.floor(scale * totalManpower);
+
                 const lockCheck = selectedCatalogItem
-                  ? checkLifecycleLock(row.lastIssuedDate, selectedCatalogItem.lifeCycleYears)
+                  ? checkLifecycleLock(
+                      row.lastReceiptDate || row.lastIssuedDate,
+                      selectedCatalogItem.lifeCycleYears || 1,
+                      authCeiling,
+                      row.lastReceivedQty || 0
+                    )
                   : null;
+
+                const isExceeding = lockCheck && Number(row.demandedQuantity) > lockCheck.netMaxAllowed;
 
                 return (
                   <Paper key={idx} variant="outlined" sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <Grid container spacing={2}>
-                      <Grid item xs={12} sm={4}>
+                      <Grid item xs={12} sm={3}>
                         <FormControl fullWidth size="small">
                           <InputLabel>Kit Item</InputLabel>
                           <Select
@@ -458,12 +480,12 @@ export default function DemandsPage() {
                         </FormControl>
                       </Grid>
 
-                      <Grid item xs={12} sm={4}>
+                      <Grid item xs={12} sm={2.5}>
                         {selectedCatalogItem?.requiresMeasurement ? (
                           <TextField
                             fullWidth
                             size="small"
-                            label="Custom Measurement"
+                            label="Custom Spec"
                             placeholder="Chest 38, Shoulder 17"
                             value={row.customMeasurement}
                             onChange={(e) => handleItemChange(idx, 'customMeasurement', e.target.value)}
@@ -487,44 +509,150 @@ export default function DemandsPage() {
                         )}
                       </Grid>
 
-                      <Grid item xs={12} sm={4}>
+                      <Grid item xs={12} sm={2.5}>
+                        <TextField
+                          type="date"
+                          fullWidth
+                          size="small"
+                          label="Last Receipt Date"
+                          InputLabelProps={{ shrink: true }}
+                          value={row.lastReceiptDate || row.lastIssuedDate || ''}
+                          onChange={(e) => {
+                            handleItemChange(idx, 'lastReceiptDate', e.target.value);
+                            handleItemChange(idx, 'lastIssuedDate', e.target.value);
+                          }}
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} sm={2}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          label="Last Received Qty"
+                          type="number"
+                          value={row.lastReceivedQty || 0}
+                          onChange={(e) => handleItemChange(idx, 'lastReceivedQty', parseInt(e.target.value, 10) || 0)}
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} sm={2}>
                         <TextField
                           fullWidth
                           size="small"
                           label="Demanded Qty"
                           type="number"
                           value={row.demandedQuantity}
-                          onChange={(e) => handleItemChange(idx, 'demandedQuantity', e.target.value)}
+                          onChange={(e) => handleItemChange(idx, 'demandedQuantity', parseInt(e.target.value, 10) || 0)}
                           required
                         />
                       </Grid>
                     </Grid>
 
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 1 }}>
-                      <TextField
-                        type="date"
-                        size="small"
-                        label="Last Issued Date"
-                        InputLabelProps={{ shrink: true }}
-                        value={row.lastIssuedDate}
-                        onChange={(e) => handleItemChange(idx, 'lastIssuedDate', e.target.value)}
-                      />
+                    {/* Item Specifications Summary Card */}
+                    {selectedCatalogItem && (
+                      <Paper variant="outlined" sx={{ p: 1.5, bgcolor: '#faf8f5', borderColor: '#e0e2db' }}>
+                        <Grid container spacing={1.5} alignItems="center">
+                          <Grid item xs={6} sm={3}>
+                            <Typography variant="caption" sx={{ color: '#56615b', fontWeight: 700, display: 'block' }}>
+                              Item Code / Name
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#1e5631', fontFamily: 'monospace' }}>
+                              {selectedCatalogItem.itemCode}
+                            </Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                              {selectedCatalogItem.name}
+                            </Typography>
+                          </Grid>
 
-                      {lockCheck?.isLocked && (
-                        <Chip
-                          icon={<LockIcon sx={{ fontSize: '0.9rem !important' }} />}
-                          label={`Locked until ${lockCheck.nextEligibleDate?.toISOString().split('T')[0]}`}
-                          color="error"
-                          size="small"
-                        />
-                      )}
+                          <Grid item xs={6} sm={2.5}>
+                            <Typography variant="caption" sx={{ color: '#56615b', fontWeight: 700, display: 'block' }}>
+                              Category & Gender
+                            </Typography>
+                            <Chip
+                              label={selectedCatalogItem.category?.name || 'General'}
+                              size="small"
+                              sx={{ fontWeight: 800, fontSize: '0.65rem', height: 18, mr: 0.5 }}
+                            />
+                            <Chip
+                              label={selectedCatalogItem.targetGender}
+                              size="small"
+                              variant="outlined"
+                              sx={{ fontWeight: 800, fontSize: '0.65rem', height: 18 }}
+                            />
+                          </Grid>
 
-                      {selectedItems.length > 1 && (
-                        <IconButton size="small" color="error" onClick={() => handleRemoveItemRow(idx)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      )}
-                    </Box>
+                          <Grid item xs={6} sm={2.5}>
+                            <Typography variant="caption" sx={{ color: '#56615b', fontWeight: 700, display: 'block' }}>
+                              Unit & Scale of Issue
+                            </Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 800, color: '#191c1a' }}>
+                              Unit: {selectedCatalogItem.unitOfIssue} • Scale: {selectedCatalogItem.scaleOfIssue}
+                            </Typography>
+                          </Grid>
+
+                          <Grid item xs={6} sm={2}>
+                            <Typography variant="caption" sx={{ color: '#56615b', fontWeight: 700, display: 'block' }}>
+                              Life Cycle / Replacement
+                            </Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 800, color: '#2d6a4f' }}>
+                              {selectedCatalogItem.lifeCycleYears} Year(s) Life
+                            </Typography>
+                          </Grid>
+
+                          <Grid item xs={12} sm={2}>
+                            <Typography variant="caption" sx={{ color: '#56615b', fontWeight: 700, display: 'block' }}>
+                              Available Sizes
+                            </Typography>
+                            <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 700, color: '#1e5631' }}>
+                              {selectedCatalogItem.sizes?.length > 0
+                                ? selectedCatalogItem.sizes.map((s: any) => s.sizeLabel).join(', ')
+                                : 'Standard / Free Size'}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Paper>
+                    )}
+
+                    {/* Entitlement & Lifecycle Lock Breakdown Banner */}
+                    {selectedCatalogItem && lockCheck && (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 1, pt: 1, borderTop: '1px solid #e0e2db' }}>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                          <Chip
+                            label={`Auth Ceiling: ${authCeiling} No.`}
+                            size="small"
+                            variant="outlined"
+                            sx={{ fontWeight: 800, fontSize: '0.68rem', color: '#1e5631', borderColor: '#1e5631' }}
+                          />
+                          <Chip
+                            label={`Last Received: ${row.lastReceivedQty || 0} No.`}
+                            size="small"
+                            variant="outlined"
+                            sx={{ fontWeight: 800, fontSize: '0.68rem', color: '#56615b' }}
+                          />
+                          <Chip
+                            label={`Net Max Allowed: ${lockCheck.netMaxAllowed} No.`}
+                            size="small"
+                            color={isExceeding ? 'error' : 'success'}
+                            sx={{ fontWeight: 900, fontSize: '0.7rem' }}
+                          />
+                          {lockCheck.isLocked && (
+                            <Chip
+                              icon={<LockIcon sx={{ fontSize: '0.85rem !important' }} />}
+                              label={`Locked until ${lockCheck.nextEligibleDate?.toISOString().split('T')[0]}`}
+                              color="error"
+                              size="small"
+                              sx={{ fontWeight: 800 }}
+                            />
+                          )}
+                        </Box>
+
+                        {selectedItems.length > 1 && (
+                          <IconButton size="small" color="error" onClick={() => handleRemoveItemRow(idx)}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        )}
+                      </Box>
+                    )}
                   </Paper>
                 );
               })}

@@ -7,8 +7,9 @@ import bcrypt from 'bcryptjs';
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const currentUser = await getCurrentUser();
-    if (!currentUser || currentUser.role !== Role.SYSTEM_ADMIN) {
-      return NextResponse.json({ error: 'Forbidden: SYSTEM_ADMIN role required' }, { status: 403 });
+    const isSuperAdmin = currentUser && (currentUser.role === Role.SYSTEM_ADMIN || currentUser.role === Role.DD_PROCUREMENT || currentUser.role === Role.CENTRAL_STORE);
+    if (!isSuperAdmin) {
+      return NextResponse.json({ error: 'Forbidden: Admin / HQ role required' }, { status: 403 });
     }
 
     const userId = params.id;
@@ -53,8 +54,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     const currentUser = await getCurrentUser();
-    if (!currentUser || currentUser.role !== Role.SYSTEM_ADMIN) {
-      return NextResponse.json({ error: 'Forbidden: SYSTEM_ADMIN role required' }, { status: 403 });
+    const isSuperAdmin = currentUser && (currentUser.role === Role.SYSTEM_ADMIN || currentUser.role === Role.DD_PROCUREMENT || currentUser.role === Role.CENTRAL_STORE);
+    if (!isSuperAdmin) {
+      return NextResponse.json({ error: 'Forbidden: Admin / HQ role required' }, { status: 403 });
     }
 
     const userId = params.id;

@@ -150,13 +150,13 @@ export default function DistributionsPage() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justify: 'space-between', gap: 2, borderBottom: '1px solid rgba(255, 255, 255, 0.08)', pb: 2 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justify: 'space-between', gap: 2, borderBottom: '1px solid #e0e2db', pb: 2 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 900, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1 }}>
             <LocalShippingIcon color="primary" /> HQ Multi-Stage Distributions
           </Typography>
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            Central Warehouse Stock Allocation, DD Procurement Signoff & Auto-Deducting Dispatch Execution
+            {currentUser?.station ? `Issue & Dispatch Details for ${currentUser.station.name} (${currentUser.station.code})` : 'Central Warehouse Stock Allocation, DD Procurement Signoff & Auto-Deducting Dispatch Execution'}
           </Typography>
         </Box>
 

@@ -35,11 +35,13 @@ import {
 } from 'recharts';
 import { downloadCSV } from '@/lib/export';
 
-const COLORS = ['#1e5631', '#2d6a4f', '#2980b9', '#e74c3c', '#f39c12', '#8e44ad'];
+const COLORS = ['#1e5631', '#2d6a4f', '#386641', '#56615b', '#d97706', '#1b4d2e'];
 
 export default function ExecutiveDashboardPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [chartItemFilter, setChartItemFilter] = useState('ALL');
+  const [chartDeficiencyFilter, setChartDeficiencyFilter] = useState('ALL');
 
   const fetchAnalytics = async () => {
     setLoading(true);
@@ -74,7 +76,17 @@ export default function ExecutiveDashboardPage() {
     );
   }
 
-  const { metrics, stationShortfallChart, sizeBreakdown } = data;
+  const { metrics, stationShortfallChart } = data;
+
+  // Filter graph data dynamically
+  const filteredChartData = (stationShortfallChart || []).filter((item: any) => {
+    const matchesDeficiency =
+      chartDeficiencyFilter === 'ALL' ||
+      (chartDeficiencyFilter === 'DEFICIENT' && item.demanded > item.fulfilled) ||
+      (chartDeficiencyFilter === 'SUFFICIENT' && item.demanded <= item.fulfilled);
+
+    return matchesDeficiency;
+  });
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -166,41 +178,66 @@ export default function ExecutiveDashboardPage() {
             <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="caption" sx={{ color: '#56615b', fontWeight: 800, textTransform: 'uppercase' }}>
-                  Total Headcount
+                  {metrics.isStationScoped ? `Station Headcount (${metrics.stationCode})` : 'Total Headcount'}
                 </Typography>
                 <PeopleIcon sx={{ color: '#f39c12' }} />
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 900, my: 1, color: '#d35400' }}>
-                {metrics.totalHeadcount.toLocaleString()}
+                {metrics.isStationScoped ? (metrics.stationHeadcount || 0).toLocaleString() : metrics.totalHeadcount.toLocaleString()}
               </Typography>
               <Typography variant="caption" sx={{ color: '#56615b' }}>
-                M: {metrics.maleHeadcount.toLocaleString()} • F: {metrics.femaleHeadcount.toLocaleString()}
+                {metrics.isStationScoped
+                  ? `M: ${(metrics.stationMale || 0).toLocaleString()} • F: ${(metrics.stationFemale || 0).toLocaleString()} (${metrics.stationName || 'Station'})`
+                  : `M: ${metrics.maleHeadcount.toLocaleString()} • F: ${metrics.femaleHeadcount.toLocaleString()}`}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
 
-      {/* Main Charts */}
+      {/* Main Charts & Breakdown Row */}
       <Grid container spacing={3}>
-        <Grid item xs={12} lg={8}>
-          <Paper elevation={1} sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <TrendingDownIcon sx={{ color: '#1e5631' }} />
-              <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e5631' }}>
-                  Station Demands vs Central Fulfillment
-                </Typography>
-                <Typography variant="caption" sx={{ color: '#56615b' }}>
-                  Comparative breakdown by top ASF Stations
-                </Typography>
+        {/* Left Bar Chart */}
+        <Grid item xs={12} lg={7}>
+          <Paper elevation={1} sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justify: 'space-between', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TrendingDownIcon sx={{ color: '#1e5631' }} />
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e5631' }}>
+                    Station Demands vs Central Fulfillment
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#56615b' }}>
+                    Comparative breakdown by ASF Stations & Stock Fulfillment
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* Itemwise & Deficiency Filters */}
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <select
+                  value={chartDeficiencyFilter}
+                  onChange={(e) => setChartDeficiencyFilter(e.target.value)}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '12px',
+                    borderRadius: '0px',
+                    borderColor: '#e0e2db',
+                    fontWeight: 600,
+                    color: '#191c1a',
+                  }}
+                >
+                  <option value="ALL">All Statuses</option>
+                  <option value="DEFICIENT">Deficient Only</option>
+                  <option value="SUFFICIENT">Sufficient Only</option>
+                </select>
               </Box>
             </Box>
 
-            <Box sx={{ height: 320, width: '100%', pt: 2 }}>
-              {stationShortfallChart.length > 0 ? (
+            <Box sx={{ height: 320, width: '100%', pt: 1 }}>
+              {filteredChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={stationShortfallChart} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
+                  <BarChart data={filteredChartData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e2db" />
                     <XAxis dataKey="stationCode" stroke="#56615b" tick={{ fontSize: 11 }} />
                     <YAxis stroke="#56615b" tick={{ fontSize: 11 }} />
@@ -210,13 +247,13 @@ export default function ExecutiveDashboardPage() {
                     />
                     <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
                     <Bar dataKey="demanded" name="Demanded Quantity" fill="#1e5631" radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="fulfilled" name="Issued Stock" fill="#2d6a4f" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="fulfilled" name="Central Fulfillment Stock" fill="#2d6a4f" radius={[0, 0, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
                 <Box sx={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
                   <Typography variant="caption" sx={{ color: '#56615b' }}>
-                    No station demand metrics recorded yet.
+                    No station demand metrics match the selected filter.
                   </Typography>
                 </Box>
               )}
@@ -224,49 +261,67 @@ export default function ExecutiveDashboardPage() {
           </Paper>
         </Grid>
 
-        <Grid item xs={12} lg={4}>
+        {/* Right Station-wise / Item-wise Demand Breakdown */}
+        <Grid item xs={12} lg={5}>
           <Paper elevation={1} sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <PieChartIcon sx={{ color: '#1e5631' }} />
+              <LocationCityIcon sx={{ color: '#1e5631' }} />
               <Box>
                 <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e5631' }}>
-                  Size Allocation Breakdown
+                  Station-wise / Item-wise Demand Breakdown
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#56615b' }}>
-                  Demanded size allocations across stations
+                  Station demand totals vs fulfillment deficiency
                 </Typography>
               </Box>
             </Box>
 
-            <Box sx={{ height: 320, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {sizeBreakdown.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={sizeBreakdown}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={55}
-                      outerRadius={85}
-                      paddingAngle={4}
-                      dataKey="quantity"
-                      nameKey="sizeLabel"
-                      label={({ sizeLabel, percent }) => `${sizeLabel} (${(percent * 100).toFixed(0)}%)`}
-                      labelLine={false}
-                    >
-                      {sizeBreakdown.map((entry: any, index: number) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e0e2db', borderRadius: '0px', fontSize: '12px' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+            <Box sx={{ height: 320, width: '100%', overflowY: 'auto', pr: 0.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              {stationShortfallChart.length > 0 ? (
+                stationShortfallChart.map((st: any, idx: number) => {
+                  const deficiency = Math.max(0, st.demanded - st.fulfilled);
+                  const fulfillPct = st.demanded > 0 ? Math.min(100, Math.round((st.fulfilled / st.demanded) * 100)) : 100;
+
+                  return (
+                    <Paper key={idx} variant="outlined" sx={{ p: 1.8, borderRadius: 0, border: '1px solid #e0e2db', bgcolor: '#faf8f5' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.8 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Chip label={st.stationCode} size="small" sx={{ fontWeight: 900, bgcolor: '#1e5631', color: '#ffffff', height: 20, fontSize: '0.68rem' }} />
+                          <Typography variant="body2" sx={{ fontWeight: 800, color: '#191c1a' }}>
+                            {st.stationName}
+                          </Typography>
+                        </Box>
+
+                        <Chip
+                          label={deficiency > 0 ? `Deficiency: ${deficiency}` : 'Fully Fulfilled'}
+                          size="small"
+                          color={deficiency > 0 ? 'error' : 'success'}
+                          sx={{ fontWeight: 800, fontSize: '0.65rem' }}
+                        />
+                      </Box>
+
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', mb: 0.5 }}>
+                        <Typography variant="caption" sx={{ color: '#1e5631', fontWeight: 800 }}>
+                          Demanded: {st.demanded} units
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#2d6a4f', fontWeight: 800 }}>
+                          Issued: {st.fulfilled} units ({fulfillPct}%)
+                        </Typography>
+                      </Box>
+
+                      {/* Progress Fill Bar */}
+                      <Box sx={{ width: '100%', bgcolor: '#e0e2db', height: 6, position: 'relative' }}>
+                        <Box sx={{ width: `${fulfillPct}%`, bgcolor: deficiency > 0 ? '#d97706' : '#2d6a4f', height: '100%' }} />
+                      </Box>
+                    </Paper>
+                  );
+                })
               ) : (
-                <Typography variant="caption" sx={{ color: '#56615b' }}>
-                  No size metrics available
-                </Typography>
+                <Box sx={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography variant="caption" sx={{ color: '#56615b' }}>
+                    No station demand breakdown available.
+                  </Typography>
+                </Box>
               )}
             </Box>
           </Paper>

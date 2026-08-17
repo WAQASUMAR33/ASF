@@ -127,6 +127,39 @@ const theme = createTheme({
         },
       },
     },
+    MuiSelect: {
+      styleOverrides: {
+        root: {
+          borderRadius: '0px !important',
+        },
+      },
+    },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          borderRadius: '0px !important',
+        },
+      },
+    },
+    MuiTableHead: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#1e5631',
+          '& .MuiTableCell-head': {
+            backgroundColor: '#1e5631',
+            color: '#ffffff',
+            fontWeight: 800,
+          },
+        },
+      },
+    },
+    MuiDivider: {
+      styleOverrides: {
+        root: {
+          borderColor: '#e0e2db',
+        },
+      },
+    },
   },
 });
 

@@ -99,7 +99,7 @@ export default function ManpowerPage() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box sx={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', pb: 2 }}>
+      <Box sx={{ borderBottom: '1px solid #e0e2db', pb: 2 }}>
         <Typography variant="h5" sx={{ fontWeight: 900, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1 }}>
           <LocationCityIcon color="primary" /> Station Manpower Matrix
         </Typography>

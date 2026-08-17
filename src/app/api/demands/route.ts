@@ -52,8 +52,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (user.role !== Role.STORE_CLERK && user.role !== Role.SYSTEM_ADMIN) {
-      return NextResponse.json({ error: 'Only STORE_CLERK can draft station demands' }, { status: 403 });
+    if (user.role !== Role.STORE_CLERK && user.role !== Role.STORE_OFFICER && user.role !== Role.SYSTEM_ADMIN) {
+      return NextResponse.json({ error: 'Only STORE_CLERK, STORE_OFFICER, or SYSTEM_ADMIN can draft station demands' }, { status: 403 });
     }
 
     const { fiscalYear, items, stationId: targetStationId } = await request.json();
@@ -94,18 +94,25 @@ export async function POST(request: Request) {
       // Calculate entitlement ceiling
       const entitlement = calculateMaxEntitlement(dbItem, manpower);
       const demandedQty = parseInt(rawItem.demandedQuantity, 10);
+      const lastRecQty = parseInt(rawItem.lastReceivedQty, 10) || 0;
 
       // Check Lifecycle Lock
-      const lockCheck = checkLifecycleLock(rawItem.lastIssuedDate, dbItem.lifeCycleYears);
+      const lockCheck = checkLifecycleLock(
+        rawItem.lastReceiptDate || rawItem.lastIssuedDate,
+        dbItem.lifeCycleYears,
+        entitlement.maxAllowed,
+        lastRecQty
+      );
+
       if (lockCheck.isLocked) {
         validationErrors.push(
           `Item ${dbItem.name} is under Lifecycle Lock: Re-order blocked until ${lockCheck.nextEligibleDate?.toISOString().split('T')[0]}`
         );
       }
 
-      if (demandedQty > entitlement.maxAllowed) {
+      if (demandedQty > lockCheck.netMaxAllowed) {
         validationErrors.push(
-          `Demanded quantity (${demandedQty}) for ${dbItem.name} exceeds max allowed entitlement ceiling (${entitlement.maxAllowed})`
+          `Demanded quantity (${demandedQty}) for ${dbItem.name} exceeds net max allowed ceiling (${lockCheck.netMaxAllowed})`
         );
       }
 
@@ -116,7 +123,7 @@ export async function POST(request: Request) {
         calculatedMaxAllowed: entitlement.maxAllowed,
         demandedQuantity: demandedQty,
         approvedQuantity: demandedQty,
-        lastIssuedDate: rawItem.lastIssuedDate ? new Date(rawItem.lastIssuedDate) : null,
+        lastIssuedDate: rawItem.lastReceiptDate || rawItem.lastIssuedDate ? new Date(rawItem.lastReceiptDate || rawItem.lastIssuedDate) : null,
       });
     }
 
@@ -192,17 +199,17 @@ export async function PUT(request: Request) {
       }
     }
 
-    // STORE_OFFICER: PENDING_STORE_OFFICER -> PENDING_CSO OR RETURNED_TO_CLERK
+    // STORE_OFFICER: DRAFT / PENDING_STORE_OFFICER / RETURNED_TO_CLERK -> PENDING_CSO OR RETURNED_TO_CLERK
     if (user.role === Role.STORE_OFFICER) {
-      if (currentStatus === DemandStatus.PENDING_STORE_OFFICER) {
-        if (targetStatus === DemandStatus.PENDING_CSO || targetStatus === DemandStatus.RETURNED_TO_CLERK) allowed = true;
+      if (currentStatus === DemandStatus.PENDING_STORE_OFFICER || currentStatus === DemandStatus.DRAFT || currentStatus === DemandStatus.RETURNED_TO_CLERK) {
+        if (targetStatus === DemandStatus.PENDING_CSO || targetStatus === DemandStatus.RETURNED_TO_CLERK || targetStatus === DemandStatus.PENDING_STORE_OFFICER) allowed = true;
       }
     }
 
-    // CSO: PENDING_CSO -> APPROVED_BY_STATION OR RETURNED_TO_CLERK
+    // CSO: PENDING_CSO -> APPROVED_BY_STATION OR PENDING_STORE_OFFICER OR RETURNED_TO_CLERK
     if (user.role === Role.CSO) {
       if (currentStatus === DemandStatus.PENDING_CSO) {
-        if (targetStatus === DemandStatus.APPROVED_BY_STATION || targetStatus === DemandStatus.RETURNED_TO_CLERK) allowed = true;
+        if (targetStatus === DemandStatus.APPROVED_BY_STATION || targetStatus === DemandStatus.PENDING_STORE_OFFICER || targetStatus === DemandStatus.RETURNED_TO_CLERK) allowed = true;
       }
     }
 
@@ -223,7 +230,7 @@ export async function PUT(request: Request) {
       where: { id: demandId },
       data: {
         status: targetStatus as DemandStatus,
-        rejectionNote: targetStatus === DemandStatus.RETURNED_TO_CLERK ? rejectionNote || comments : demand.rejectionNote,
+        rejectionNote: (targetStatus === DemandStatus.RETURNED_TO_CLERK || targetStatus === DemandStatus.PENDING_STORE_OFFICER) ? rejectionNote || comments : demand.rejectionNote,
         auditLogs: {
           create: {
             actionBy: user.id,

@@ -17,6 +17,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogActions,
   CircularProgress,
   Grid,
   Card,
@@ -35,6 +36,8 @@ export default function HQConsolidationPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedItemCode, setSelectedItemCode] = useState('ALL');
+  const [deficiencyFilter, setDeficiencyFilter] = useState('ALL');
   const [selectedBreakdownItem, setSelectedBreakdownItem] = useState<any>(null);
 
   const fetchConsolidation = async () => {
@@ -85,17 +88,34 @@ export default function HQConsolidationPage() {
     );
   }
 
-  const filteredItems = (data.consolidated || []).filter(
-    (item: any) =>
+  // Unique item codes for Itemwise Filter
+  const uniqueItems = Array.from(
+    new Set((data.consolidated || []).map((item: any) => `${item.itemCode}||${item.itemName}`))
+  ).map((str: any) => {
+    const [code, name] = str.split('||');
+    return { code, name };
+  });
+
+  const filteredItems = (data.consolidated || []).filter((item: any) => {
+    const matchesSearch =
       item.itemName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.itemCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.categoryName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      item.categoryName.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesItemFilter = selectedItemCode === 'ALL' || item.itemCode === selectedItemCode;
+
+    const matchesDeficiency =
+      deficiencyFilter === 'ALL' ||
+      (deficiencyFilter === 'DEFICIENT' && item.deficiency > 0) ||
+      (deficiencyFilter === 'SUFFICIENT' && item.deficiency <= 0);
+
+    return matchesSearch && matchesItemFilter && matchesDeficiency;
+  });
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justify: 'space-between', gap: 2, borderBottom: '1px solid rgba(255, 255, 255, 0.08)', pb: 2 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justify: 'space-between', gap: 2, borderBottom: '1px solid #e0e2db', pb: 2 }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Typography variant="h5" sx={{ fontWeight: 900, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -113,7 +133,7 @@ export default function HQConsolidationPage() {
             Export Excel/CSV
           </Button>
           <Button variant="contained" color="primary" size="small" startIcon={<PrintIcon />} onClick={handlePrintPDF}>
-            Print PDF Report
+            Print Stationwise / Consolidated Demand
           </Button>
         </Box>
       </Box>
@@ -121,12 +141,12 @@ export default function HQConsolidationPage() {
       {/* Summary Cards */}
       <Grid container spacing={2.5}>
         <Grid item xs={12} sm={4}>
-          <Card elevation={1} sx={{ borderLeft: '4px solid #38bdf8' }}>
+          <Card elevation={1} sx={{ borderLeft: '4px solid #1e5631' }}>
             <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
               <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase' }}>
                 Consolidated Line Items
               </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 900, my: 0.5 }}>
+              <Typography variant="h4" sx={{ fontWeight: 900, my: 0.5, color: '#1e5631' }}>
                 {data.totalItemsCount}
               </Typography>
             </CardContent>
@@ -134,7 +154,7 @@ export default function HQConsolidationPage() {
         </Grid>
 
         <Grid item xs={12} sm={4}>
-          <Card elevation={1} sx={{ borderLeft: '4px solid #f43f5e' }}>
+          <Card elevation={1} sx={{ borderLeft: '4px solid #c0392b' }}>
             <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
               <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase' }}>
                 Deficient Items
@@ -147,12 +167,12 @@ export default function HQConsolidationPage() {
         </Grid>
 
         <Grid item xs={12} sm={4}>
-          <Card elevation={1} sx={{ borderLeft: '4px solid #10b981' }}>
+          <Card elevation={1} sx={{ borderLeft: '4px solid #2d6a4f' }}>
             <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
               <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase' }}>
                 Deficiency Formula Standard
               </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 800, color: 'success.main', fontFamily: 'monospace', mt: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 800, color: '#2d6a4f', fontFamily: 'monospace', mt: 1 }}>
                 Deficiency = Demand - Central Stock
               </Typography>
             </CardContent>
@@ -160,16 +180,53 @@ export default function HQConsolidationPage() {
         </Grid>
       </Grid>
 
-      {/* Search */}
-      <Box sx={{ maxWidth: 360 }}>
+      {/* Itemwise & Deficiency Filter Controls */}
+      <Paper elevation={0} sx={{ p: 2, bgcolor: '#ffffff', border: '1px solid #e0e2db', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}>
         <TextField
-          fullWidth
           size="small"
           placeholder="Search items by code or description..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{ minWidth: 260, flexGrow: 1 }}
         />
-      </Box>
+
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          {/* Itemwise Dropdown Filter */}
+          <Box sx={{ minWidth: 220 }}>
+            <TextField
+              select
+              fullWidth
+              size="small"
+              label="Filter by Kit Item"
+              value={selectedItemCode}
+              onChange={(e) => setSelectedItemCode(e.target.value)}
+            >
+              <option value="ALL">All Catalog Items</option>
+              {uniqueItems.map((it: any) => (
+                <option key={it.code} value={it.code}>
+                  {it.code} - {it.name}
+                </option>
+              ))}
+            </TextField>
+          </Box>
+
+          {/* Deficiency Status Dropdown Filter */}
+          <Box sx={{ minWidth: 180 }}>
+            <TextField
+              select
+              fullWidth
+              size="small"
+              label="Deficiency Status"
+              value={deficiencyFilter}
+              onChange={(e) => setDeficiencyFilter(e.target.value)}
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="DEFICIENT">Deficient Only</option>
+              <option value="SUFFICIENT">Sufficient Only</option>
+            </TextField>
+          </Box>
+        </Box>
+      </Paper>
 
       {/* Table */}
       <TableContainer component={Paper} elevation={1}>
@@ -180,7 +237,7 @@ export default function HQConsolidationPage() {
               <TableCell sx={{ fontWeight: 800, color: '#ffffff' }}>Kit Description</TableCell>
               <TableCell sx={{ fontWeight: 800, color: '#ffffff' }}>Size / Unit</TableCell>
               <TableCell sx={{ fontWeight: 800, color: '#ffffff' }}>Consolidated Demand</TableCell>
-              <TableCell sx={{ fontWeight: 800, color: '#ffffff' }}>Central Stock</TableCell>
+              <TableCell sx={{ fontWeight: 800, color: '#ffffff' }}>Central Fulfillment</TableCell>
               <TableCell sx={{ fontWeight: 800, color: '#ffffff' }}>Deficiency Qty</TableCell>
               <TableCell sx={{ fontWeight: 800, color: '#ffffff' }}>Deficiency %</TableCell>
               <TableCell sx={{ fontWeight: 800, color: '#ffffff' }}>Status</TableCell>
@@ -191,7 +248,7 @@ export default function HQConsolidationPage() {
             {filteredItems.length > 0 ? (
               filteredItems.map((r: any) => (
                 <TableRow key={r.key} hover>
-                  <TableCell sx={{ fontFamily: 'monospace', fontWeight: 800, color: 'primary.main' }}>
+                  <TableCell sx={{ fontFamily: 'monospace', fontWeight: 800, color: '#1e5631' }}>
                     {r.itemCode}
                   </TableCell>
                   <TableCell>
@@ -201,10 +258,26 @@ export default function HQConsolidationPage() {
                   <TableCell sx={{ fontFamily: 'monospace' }}>
                     {r.sizeLabel} ({r.unitOfIssue})
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 800 }}>{r.totalConsolidatedDemand.toLocaleString()}</TableCell>
-                  <TableCell sx={{ fontWeight: 800, color: 'secondary.main' }}>{r.centralStockQty.toLocaleString()}</TableCell>
-                  <TableCell sx={{ fontWeight: 800, color: r.deficiency > 0 ? 'error.main' : 'success.main' }}>
-                    {r.deficiency.toLocaleString()}
+                  {/* Distinct Color: Station Demand = Deep Forest Green Badge */}
+                  <TableCell sx={{ fontWeight: 800 }}>
+                    <Chip
+                      label={`${r.totalConsolidatedDemand.toLocaleString()} ${r.unitOfIssue}`}
+                      size="small"
+                      sx={{ bgcolor: 'rgba(30, 86, 49, 0.1)', color: '#1e5631', fontWeight: 800, border: '1px solid #1e5631' }}
+                    />
+                  </TableCell>
+                  {/* Distinct Color: Central Fulfillment = Accent Green/Teal Badge */}
+                  <TableCell sx={{ fontWeight: 800 }}>
+                    <Chip
+                      label={`${r.centralStockQty.toLocaleString()} ${r.unitOfIssue}`}
+                      size="small"
+                      sx={{ bgcolor: 'rgba(45, 106, 79, 0.1)', color: '#2d6a4f', fontWeight: 800, border: '1px solid #2d6a4f' }}
+                    />
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 800 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 900, color: r.deficiency > 0 ? '#c0392b' : '#2e7d32' }}>
+                      {r.deficiency.toLocaleString()}
+                    </Typography>
                   </TableCell>
                   <TableCell sx={{ fontFamily: 'monospace', fontWeight: 700 }}>{r.deficiencyPercentage}%</TableCell>
                   <TableCell>
@@ -219,7 +292,7 @@ export default function HQConsolidationPage() {
                     ) : (
                       <Chip
                         icon={<CheckCircleIcon sx={{ fontSize: '0.9rem !important' }} />}
-                        label="SUFFICIENT"
+                        label="FULFILLED"
                         color="success"
                         size="small"
                         sx={{ fontWeight: 800, fontSize: '0.65rem' }}
@@ -240,7 +313,7 @@ export default function HQConsolidationPage() {
             ) : (
               <TableRow>
                 <TableCell colSpan={9} align="center" sx={{ py: 6, color: 'text.secondary' }}>
-                  No approved station demand items found to consolidate.
+                  No station demand items match the selected item or deficiency filter.
                 </TableCell>
               </TableRow>
             )}
@@ -252,7 +325,7 @@ export default function HQConsolidationPage() {
       {selectedBreakdownItem && (
         <Dialog open maxWidth="sm" fullWidth onClose={() => setSelectedBreakdownItem(null)}>
           <DialogTitle sx={{ fontWeight: 800, color: 'primary.main', fontFamily: 'monospace' }}>
-            {selectedBreakdownItem.itemCode} - Station Breakdown
+            {selectedBreakdownItem.itemCode} - Stationwise Demand Breakdown
           </DialogTitle>
           <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {selectedBreakdownItem.stationBreakdown?.map((st: any, idx: number) => (
@@ -264,12 +337,20 @@ export default function HQConsolidationPage() {
                     <Typography variant="caption" sx={{ color: 'text.secondary' }}>Code: {st.stationCode}</Typography>
                   </Box>
                 </Box>
-                <Typography variant="h6" sx={{ fontWeight: 900, color: 'primary.main' }}>
-                  {st.quantity}
+                <Typography variant="h6" sx={{ fontWeight: 900, color: '#1e5631' }}>
+                  {st.quantity} units
                 </Typography>
               </Paper>
             ))}
           </DialogContent>
+          <DialogActions sx={{ p: 2, gap: 1 }}>
+            <Button variant="outlined" startIcon={<PrintIcon />} onClick={() => window.print()}>
+              Print Station Breakdown
+            </Button>
+            <Button variant="contained" color="primary" onClick={() => setSelectedBreakdownItem(null)}>
+              Close
+            </Button>
+          </DialogActions>
         </Dialog>
       )}
     </Box>

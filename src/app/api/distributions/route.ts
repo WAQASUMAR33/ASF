@@ -12,10 +12,13 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const stationId = searchParams.get('stationId') || undefined;
+    const stationIdParam = searchParams.get('stationId') || undefined;
+
+    const isHQ = isHQRole(user.role);
+    const effectiveStationId = !isHQ && user.stationId ? user.stationId : stationIdParam;
 
     const distributions = await prisma.inventoryDistribution.findMany({
-      where: stationId ? { stationId } : undefined,
+      where: effectiveStationId ? { stationId: effectiveStationId } : undefined,
       include: {
         station: true,
         items: {
