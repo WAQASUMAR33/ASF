@@ -65,18 +65,45 @@ export default function ExecutiveDashboardPage() {
     downloadCSV('ASF_Station_Shortfall_Summary.csv', data.stationShortfallChart);
   };
 
-  if (loading || !data) {
+  if (loading || !data || !data.metrics) {
     return (
-      <Box sx={{ display: 'flex', height: 400, alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-        <CircularProgress sx={{ color: '#1e5631' }} />
-        <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-          Loading ASF Portal Analytics Engine...
-        </Typography>
+      <Box sx={{ display: 'flex', height: 400, alignItems: 'center', justifyContent: 'center', gap: 2, flexDirection: 'column' }}>
+        {data?.error ? (
+          <Paper variant="outlined" sx={{ p: 3, borderColor: '#ef9a9a', bgcolor: '#ffebee', textAlign: 'center' }}>
+            <Typography variant="body2" sx={{ fontWeight: 700, color: '#c62828' }}>
+              Analytics Loading Error: {data.error}
+            </Typography>
+            <Button variant="outlined" size="small" onClick={fetchAnalytics} sx={{ mt: 1.5, color: '#c62828', borderColor: '#ef9a9a' }}>
+              Retry Loading Analytics
+            </Button>
+          </Paper>
+        ) : (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <CircularProgress sx={{ color: '#1e5631' }} />
+            <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+              Loading ASF Portal Analytics Engine...
+            </Typography>
+          </Box>
+        )}
       </Box>
     );
   }
 
-  const { metrics, stationShortfallChart } = data;
+  const metrics = data.metrics || {
+    activeDemandsCount: 0,
+    issuedDistributionsCount: 0,
+    totalStations: 0,
+    isStationScoped: false,
+    stationCode: '',
+    stationName: '',
+    stationHeadcount: 0,
+    stationMale: 0,
+    stationFemale: 0,
+    totalHeadcount: 0,
+    maleHeadcount: 0,
+    femaleHeadcount: 0,
+  };
+  const stationShortfallChart = data.stationShortfallChart || [];
 
   // Filter graph data dynamically
   const filteredChartData = (stationShortfallChart || []).filter((item: any) => {
