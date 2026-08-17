@@ -17,6 +17,9 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 
+import Link from 'next/link';
+import AsfLogo from '@/components/ui/AsfLogo';
+
 interface NavbarProps {
   user: {
     fullName: string;
@@ -54,23 +57,10 @@ export default function Navbar({ user }: NavbarProps) {
   return (
     <AppBar position="sticky" elevation={0} sx={{ bgcolor: '#ffffff', color: '#191c1a', borderBottom: '1px solid #e0e2db' }}>
       <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 4 } }}>
-        {/* Left Brand Logo */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Avatar sx={{ bgcolor: '#1e5631', color: '#ffffff', fontWeight: 'bold' }}>
-            <SecurityIcon />
-          </Avatar>
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="h6" sx={{ fontWeight: 900, color: '#1e5631', letterSpacing: 0.5 }}>
-                ASF IMS
-              </Typography>
-              <Chip label="Forest Green" size="small" variant="outlined" color="primary" sx={{ height: 20, fontSize: '0.65rem', fontWeight: 700 }} />
-            </Box>
-            <Typography variant="caption" sx={{ color: '#56615b', display: { xs: 'none', sm: 'block' } }}>
-              Airports Security Force • Government of Pakistan
-            </Typography>
-          </Box>
-        </Box>
+        {/* Left Official ASF Crest Brand Logo */}
+        <Link href="/" style={{ textDecoration: 'none' }}>
+          <AsfLogo size={44} showText={true} light={false} />
+        </Link>
 
         {/* Right User Bar */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
