@@ -50,7 +50,7 @@ export default function DemandsPage() {
   const [targetStationId, setTargetStationId] = useState('');
   const [fiscalYear, setFiscalYear] = useState(new Date().getFullYear());
   const [selectedItems, setSelectedItems] = useState<any[]>([
-    { itemId: '', sizeId: '', customMeasurement: '', demandedQuantity: 1, lastReceiptDate: '', lastReceivedQty: 0 },
+    { itemId: '', sizeId: '', customMeasurement: '', demandedQuantity: 1, lastReceiptDate: '', lastReceivedQty: 0, sizeBreakdown: {} },
   ]);
   const [wizardError, setWizardError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -91,7 +91,7 @@ export default function DemandsPage() {
   const handleAddItemRow = () => {
     setSelectedItems([
       ...selectedItems,
-      { itemId: '', sizeId: '', customMeasurement: '', demandedQuantity: 1, lastReceiptDate: '', lastReceivedQty: 0 },
+      { itemId: '', sizeId: '', customMeasurement: '', demandedQuantity: 1, lastReceiptDate: '', lastReceivedQty: 0, sizeBreakdown: {} },
     ]);
   };
 
@@ -104,6 +104,31 @@ export default function DemandsPage() {
   const handleItemChange = (index: number, field: string, value: any) => {
     const list = [...selectedItems];
     list[index][field] = value;
+
+    if (field === 'itemId') {
+      const catItem = itemsCatalog.find((i) => i.id === value);
+      const initialBreakdown: Record<string, number> = {};
+      if (catItem?.sizes && catItem.sizes.length > 0) {
+        catItem.sizes.forEach((s: any) => {
+          initialBreakdown[s.id] = 0;
+        });
+        list[index].sizeId = catItem.sizes[0]?.id || '';
+      } else {
+        list[index].sizeId = '';
+      }
+      list[index].sizeBreakdown = initialBreakdown;
+    }
+
+    if (field === 'sizeBreakdown') {
+      const sum = Object.values(value as Record<string, number>).reduce(
+        (acc, q) => acc + (Number(q) || 0),
+        0
+      );
+      if (sum > 0) {
+        list[index].demandedQuantity = sum;
+      }
+    }
+
     setSelectedItems(list);
   };
 
@@ -113,12 +138,47 @@ export default function DemandsPage() {
     setSubmitting(true);
 
     try {
+      const preparedPayloadItems: any[] = [];
+      for (const it of selectedItems) {
+        if (!it.itemId) continue;
+        const breakdown = it.sizeBreakdown || {};
+        const nonZeroSizes = Object.entries(breakdown).filter(([_, qty]) => Number(qty) > 0);
+
+        if (nonZeroSizes.length > 0) {
+          for (const [sId, qty] of nonZeroSizes) {
+            preparedPayloadItems.push({
+              itemId: it.itemId,
+              sizeId: sId,
+              customMeasurement: it.customMeasurement || null,
+              demandedQuantity: Number(qty),
+              lastReceiptDate: it.lastReceiptDate || it.lastIssuedDate || '',
+              lastReceivedQty: Math.round(
+                (Number(it.lastReceivedQty) || 0) * (Number(qty) / Math.max(1, Number(it.demandedQuantity)))
+              ),
+            });
+          }
+        } else {
+          preparedPayloadItems.push({
+            itemId: it.itemId,
+            sizeId: it.sizeId || null,
+            customMeasurement: it.customMeasurement || null,
+            demandedQuantity: Number(it.demandedQuantity) || 1,
+            lastReceiptDate: it.lastReceiptDate || it.lastIssuedDate || '',
+            lastReceivedQty: Number(it.lastReceivedQty) || 0,
+          });
+        }
+      }
+
+      if (preparedPayloadItems.length === 0) {
+        throw new Error('Please select at least one kit item and specify quantities');
+      }
+
       const res = await fetch('/api/demands', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fiscalYear,
-          items: selectedItems,
+          items: preparedPayloadItems,
           stationId: currentUser?.stationId || targetStationId,
         }),
       });
@@ -250,7 +310,18 @@ export default function DemandsPage() {
                   </TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{d.station?.name}</TableCell>
                   <TableCell>{d.fiscalYear}</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>{d.items?.length || 0} Line Items</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>
+                    {d.items?.length || 0} Line Items
+                    {d.items && d.items.length > 0 && (
+                      <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', fontSize: '0.72rem', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {d.items
+                          .map((it: any) => `${it.item?.name || 'Item'} (${it.size?.sizeLabel || 'Std'}): ${it.demandedQuantity}`)
+                          .slice(0, 2)
+                          .join(', ')}
+                        {d.items.length > 2 ? ` +${d.items.length - 2} more` : ''}
+                      </Typography>
+                    )}
+                  </TableCell>
                   <TableCell>{renderStatusChip(d.status)}</TableCell>
                   <TableCell sx={{ fontWeight: 600, color: '#191c1a', whiteSpace: 'nowrap' }}>
                     {d.createdAt
@@ -321,9 +392,15 @@ export default function DemandsPage() {
                   {selectedDemand.items?.map((it: any) => (
                     <TableRow key={it.id}>
                       <TableCell sx={{ fontWeight: 600 }}>{it.item?.name} ({it.item?.itemCode})</TableCell>
-                      <TableCell>{it.size?.sizeLabel || it.customMeasurement || 'Standard'}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={it.size?.sizeLabel || it.customMeasurement || 'Standard'}
+                          size="small"
+                          sx={{ fontWeight: 800, bgcolor: '#e8f5e9', color: '#1e5631', fontSize: '0.75rem' }}
+                        />
+                      </TableCell>
                       <TableCell sx={{ color: 'primary.main', fontWeight: 700 }}>{it.calculatedMaxAllowed}</TableCell>
-                      <TableCell sx={{ fontWeight: 800 }}>{it.demandedQuantity}</TableCell>
+                      <TableCell sx={{ fontWeight: 800, color: '#191c1a' }}>{it.demandedQuantity} Units</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -552,9 +629,119 @@ export default function DemandsPage() {
                           value={row.demandedQuantity}
                           onChange={(e) => handleItemChange(idx, 'demandedQuantity', parseInt(e.target.value, 10) || 0)}
                           required
+                          helperText={selectedCatalogItem?.sizes?.length > 0 ? 'Calculated from sizes' : undefined}
                         />
                       </Grid>
                     </Grid>
+
+                    {/* Sizes Breakdown Section for Items with Defined Sizes */}
+                    {selectedCatalogItem?.sizes && selectedCatalogItem.sizes.length > 0 && (
+                      <Paper
+                        elevation={0}
+                        sx={{
+                          p: 2,
+                          bgcolor: '#f4fbf7',
+                          border: '1.5px solid #a7d7ba',
+                          borderRadius: '6px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 1.5,
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1e5631' }}>
+                              Sizes Breakdown (Per-Size Quantity Demand)
+                            </Typography>
+                            <Chip
+                              label={`${selectedCatalogItem.sizes.length} Sizes Available`}
+                              size="small"
+                              sx={{ height: 22, fontSize: '0.7rem', fontWeight: 800, bgcolor: '#e8f5e9', color: '#1e5631' }}
+                            />
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="caption" sx={{ fontWeight: 700, color: '#56615b' }}>
+                              Breakdown Total:
+                            </Typography>
+                            <Chip
+                              label={`${row.demandedQuantity || 0} Units`}
+                              size="small"
+                              sx={{
+                                fontWeight: 900,
+                                bgcolor: '#1e5631',
+                                color: '#ffffff',
+                                height: 24,
+                                fontSize: '0.78rem',
+                              }}
+                            />
+                          </Box>
+                        </Box>
+
+                        <Typography variant="caption" sx={{ color: '#4a5568', fontWeight: 500 }}>
+                          Enter the required quantity breakdown for each official uniform / kit size according to station personnel entitlement:
+                        </Typography>
+
+                        <Grid container spacing={1.5}>
+                          {selectedCatalogItem.sizes.map((sz: any) => {
+                            const currentQty = row.sizeBreakdown?.[sz.id] ?? 0;
+                            return (
+                              <Grid item xs={6} sm={4} md={2.4} key={sz.id}>
+                                <Box
+                                  sx={{
+                                    p: 1.2,
+                                    border: currentQty > 0 ? '1.5px solid #1e5631' : '1px solid #cbd5e1',
+                                    bgcolor: currentQty > 0 ? '#ffffff' : '#f8fafc',
+                                    borderRadius: '4px',
+                                    transition: 'all 0.15s ease',
+                                  }}
+                                >
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      fontWeight: 800,
+                                      color: currentQty > 0 ? '#1e5631' : '#475569',
+                                      display: 'block',
+                                      mb: 0.6,
+                                      textOverflow: 'ellipsis',
+                                      overflow: 'hidden',
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    {sz.sizeLabel}
+                                  </Typography>
+                                  <TextField
+                                    type="number"
+                                    size="small"
+                                    fullWidth
+                                    value={currentQty === 0 ? '' : currentQty}
+                                    placeholder="0"
+                                    inputProps={{ min: 0 }}
+                                    onChange={(e) => {
+                                      const val = Math.max(0, parseInt(e.target.value, 10) || 0);
+                                      const updatedBreakdown = {
+                                        ...(row.sizeBreakdown || {}),
+                                        [sz.id]: val,
+                                      };
+                                      handleItemChange(idx, 'sizeBreakdown', updatedBreakdown);
+                                    }}
+                                    sx={{
+                                      bgcolor: '#ffffff',
+                                      '& .MuiOutlinedInput-input': {
+                                        py: 0.6,
+                                        px: 1,
+                                        fontSize: '0.85rem',
+                                        fontWeight: 800,
+                                        color: '#191c1a',
+                                      },
+                                    }}
+                                  />
+                                </Box>
+                              </Grid>
+                            );
+                          })}
+                        </Grid>
+                      </Paper>
+                    )}
 
                     {/* Item Specifications Summary Card */}
                     {selectedCatalogItem && (

@@ -84,6 +84,15 @@ export async function POST(request: Request) {
     const preparedItems = [];
     const validationErrors = [];
 
+    // Aggregate total demanded quantity per kit item across all sizes
+    const itemTotalDemanded: Record<string, number> = {};
+    for (const rawItem of items) {
+      const q = parseInt(rawItem.demandedQuantity, 10) || 0;
+      itemTotalDemanded[rawItem.itemId] = (itemTotalDemanded[rawItem.itemId] || 0) + q;
+    }
+
+    const validatedItemIds = new Set<string>();
+
     for (const rawItem of items) {
       const dbItem = await prisma.kitItem.findUnique({
         where: { id: rawItem.itemId },
@@ -104,17 +113,20 @@ export async function POST(request: Request) {
         lastRecQty
       );
 
-      if (lockCheck.isLocked) {
+      if (lockCheck.isLocked && !validatedItemIds.has(dbItem.id)) {
         validationErrors.push(
           `Item ${dbItem.name} is under Lifecycle Lock: Re-order blocked until ${lockCheck.nextEligibleDate?.toISOString().split('T')[0]}`
         );
       }
 
-      if (demandedQty > lockCheck.netMaxAllowed) {
+      const totalForThisItem = itemTotalDemanded[dbItem.id] || demandedQty;
+      if (totalForThisItem > lockCheck.netMaxAllowed && !validatedItemIds.has(dbItem.id)) {
         validationErrors.push(
-          `Demanded quantity (${demandedQty}) for ${dbItem.name} exceeds net max allowed ceiling (${lockCheck.netMaxAllowed})`
+          `Demanded total quantity (${totalForThisItem}) for ${dbItem.name} across sizes exceeds net max allowed ceiling (${lockCheck.netMaxAllowed})`
         );
       }
+
+      validatedItemIds.add(dbItem.id);
 
       preparedItems.push({
         itemId: dbItem.id,

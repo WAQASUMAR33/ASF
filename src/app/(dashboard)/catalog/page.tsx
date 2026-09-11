@@ -58,6 +58,19 @@ export default function CatalogPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  // Central Stock Modal State
+  const [showStockModal, setShowStockModal] = useState(false);
+  const [selectedStockItemId, setSelectedStockItemId] = useState('');
+  const [selectedStockSizeId, setSelectedStockSizeId] = useState('');
+  const [stockAvailableQty, setStockAvailableQty] = useState<number>(0);
+  const [updatingStock, setUpdatingStock] = useState(false);
+
+  // Category Management Modal State
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
+  const [newCatDesc, setNewCatDesc] = useState('');
+  const [savingCat, setSavingCat] = useState(false);
+
   const fetchCatalog = async () => {
     setLoading(true);
     try {
@@ -180,31 +193,7 @@ export default function CatalogPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', height: 400, alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-        <CircularProgress sx={{ color: '#1e5631' }} />
-        <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-          Loading Kit Item Catalog (MDM)...
-        </Typography>
-      </Box>
-    );
-  }
-
   const isHQ = ['DD_PROCUREMENT', 'CENTRAL_STORE', 'SYSTEM_ADMIN'].includes(currentUser?.role);
-
-  // Central Stock Modal State
-  const [showStockModal, setShowStockModal] = useState(false);
-  const [selectedStockItemId, setSelectedStockItemId] = useState('');
-  const [selectedStockSizeId, setSelectedStockSizeId] = useState('');
-  const [stockAvailableQty, setStockAvailableQty] = useState<number>(0);
-  const [updatingStock, setUpdatingStock] = useState(false);
-
-  // Category Management Modal State
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [newCatName, setNewCatName] = useState('');
-  const [newCatDesc, setNewCatDesc] = useState('');
-  const [savingCat, setSavingCat] = useState(false);
 
   const handleUpdateCentralStock = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -279,6 +268,17 @@ export default function CatalogPage() {
       item.itemCode.toLowerCase().includes(search.toLowerCase()) ||
       item.category?.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', height: 400, alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+        <CircularProgress sx={{ color: '#1e5631' }} />
+        <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+          Loading Kit Item Catalog (MDM)...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
