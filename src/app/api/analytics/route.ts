@@ -353,6 +353,7 @@ export async function GET(request: Request) {
         deficiency,
         stockStatus,
         fulfillmentRate: rate,
+        createdDate: new Date(demand.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
       };
     });
 

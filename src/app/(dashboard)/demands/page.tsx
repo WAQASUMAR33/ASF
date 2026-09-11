@@ -237,7 +237,7 @@ export default function DemandsPage() {
               <TableCell sx={{ fontWeight: 800, color: '#ffffff' }}>Fiscal Year</TableCell>
               <TableCell sx={{ fontWeight: 800, color: '#ffffff' }}>Items</TableCell>
               <TableCell sx={{ fontWeight: 800, color: '#ffffff' }}>State</TableCell>
-              <TableCell sx={{ fontWeight: 800, color: '#ffffff' }}>Created By</TableCell>
+              <TableCell sx={{ fontWeight: 800, color: '#ffffff' }}>Created Date</TableCell>
               <TableCell align="right" sx={{ fontWeight: 800, color: '#ffffff' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -252,7 +252,15 @@ export default function DemandsPage() {
                   <TableCell>{d.fiscalYear}</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>{d.items?.length || 0} Line Items</TableCell>
                   <TableCell>{renderStatusChip(d.status)}</TableCell>
-                  <TableCell>{d.createdBy?.fullName}</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: '#191c1a', whiteSpace: 'nowrap' }}>
+                    {d.createdAt
+                      ? new Date(d.createdAt).toLocaleDateString('en-GB', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        })
+                      : '—'}
+                  </TableCell>
                   <TableCell align="right">
                     <Button
                       variant="outlined"
@@ -285,7 +293,7 @@ export default function DemandsPage() {
                 {selectedDemand.demandNumber}
               </Typography>
               <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Station: {selectedDemand.station?.name}
+                Station: {selectedDemand.station?.name} • Created Date: {selectedDemand.createdAt ? new Date(selectedDemand.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
               </Typography>
             </Box>
             <Button size="small" onClick={() => setSelectedDemand(null)}>✕ Close</Button>
