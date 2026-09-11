@@ -96,32 +96,30 @@ export default function LoginPage() {
         overflow: 'hidden',
       }}
     >
-      {/* Fixed Full-Screen Background Image */}
+      {/* Fixed Full-Screen Background with Subtle ASF Crest */}
       <Box
         sx={{
           position: 'fixed',
           inset: 0,
           zIndex: 0,
           overflow: 'hidden',
-          backgroundImage: 'url("/Karachi_Jinnah_Airport.jpg")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
+          background: 'radial-gradient(ellipse at center, #1b4d2e 0%, #0e2919 65%, #08170e 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         <Image
-          src="/Karachi_Jinnah_Airport.jpg"
-          alt="Karachi Jinnah International Airport Background"
-          fill
+          src="/asf_logo.png"
+          alt="ASF Background Crest"
+          width={650}
+          height={650}
           priority
           unoptimized
-          style={{ objectFit: 'cover', objectPosition: 'center' }}
-        />
-        <Box
-          sx={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: 'linear-gradient(rgba(10, 24, 15, 0.45), rgba(10, 24, 15, 0.55))',
+          style={{
+            objectFit: 'contain',
+            opacity: 0.05,
+            pointerEvents: 'none',
           }}
         />
       </Box>
@@ -141,7 +139,7 @@ export default function LoginPage() {
         }}
       >
         <Grid container minHeight={600}>
-          {/* Left Deep Forest Green Banner with Airport Image Overlay */}
+          {/* Left Deep Forest Green Banner with Official Crest Watermark */}
           <Grid
             item
             xs={12}
@@ -156,31 +154,30 @@ export default function LoginPage() {
               overflow: 'hidden',
             }}
           >
-            {/* Banner Background Image Overlay */}
+            {/* Banner Background Official Crest Watermark */}
             <Box
               sx={{
                 position: 'absolute',
                 inset: 0,
                 zIndex: 0,
-                backgroundImage: 'url("/Karachi_Jinnah_Airport.jpg")',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
+                background: 'linear-gradient(145deg, rgba(20, 56, 32, 0.96), rgba(15, 42, 24, 0.98))',
+                overflow: 'hidden',
               }}
             >
               <Image
-                src="/Karachi_Jinnah_Airport.jpg"
-                alt="Airport Banner Overlay"
-                fill
+                src="/asf_logo.png"
+                alt="Airports Security Force Official Crest"
+                width={420}
+                height={420}
                 priority
                 unoptimized
-                style={{ objectFit: 'cover', objectPosition: 'center' }}
-              />
-              <Box
-                sx={{
+                style={{
+                  objectFit: 'contain',
+                  opacity: 0.08,
                   position: 'absolute',
-                  inset: 0,
-                  backgroundImage: 'linear-gradient(rgba(20, 56, 32, 0.88), rgba(15, 42, 24, 0.94))',
+                  right: '-60px',
+                  bottom: '-60px',
+                  pointerEvents: 'none',
                 }}
               />
             </Box>
@@ -198,12 +195,12 @@ export default function LoginPage() {
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pl: 0.5 }}>
                 {[
-                  'Station Demand Drafting & State Machine Workflow',
-                  'Entitlement Ceiling & Replacement Lifecycle Lock Validation',
-                  'HQ National Rollup & Real-Time Deficiency Formula Engine',
-                  'Multi-Stage Central Store Allocation & Auto-Stock Dispatch',
-                  'Station Headcount Manpower Matrix across 30+ Airports',
-                  'System Audit Trail & Role-Based Access Control (RBAC)',
+                  'Station Demand Preparation of Uniform items and Approval Process',
+                  'Authorization and Replacement Validation',
+                  'HQ Inventory and Deficiency Monitoring',
+                  'Central Store Allocation and Stock Dispatch',
+                  'Airport Manpower Management',
+                  'Audit Trail and User Access Control',
                 ].map((item, idx) => (
                   <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
                     <ChevronRightIcon sx={{ color: '#f39c12', fontSize: '1.2rem' }} />
@@ -221,13 +218,21 @@ export default function LoginPage() {
             {/* Footer Helpline Contacts */}
             <Box sx={{ position: 'relative', zIndex: 1, pt: 3, borderTop: '1px solid rgba(255, 255, 255, 0.2)', display: 'flex', flexDirection: 'column', gap: 0.8 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box
+                  component="a"
+                  href="tel:02199242583"
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none' }}
+                >
                   <PhoneIcon sx={{ fontSize: '0.9rem', color: '#f39c12' }} />
-                  <Typography variant="caption" sx={{ color: '#ffffff', fontWeight: 800 }}>051 111 772 772</Typography>
+                  <Typography variant="caption" sx={{ color: '#ffffff', fontWeight: 800 }}>021- 99242583</Typography>
                 </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box
+                  component="a"
+                  href="mailto:ddproc@asf.gov.pk"
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none' }}
+                >
                   <EmailIcon sx={{ fontSize: '0.9rem', color: '#f39c12' }} />
-                  <Typography variant="caption" sx={{ color: '#ffffff', fontWeight: 800 }}>helpline@asf.gov.pk</Typography>
+                  <Typography variant="caption" sx={{ color: '#ffffff', fontWeight: 800 }}>ddproc@asf.gov.pk</Typography>
                 </Box>
               </Box>
               <Typography variant="caption" sx={{ color: '#a7f3d0', fontSize: '0.7rem', opacity: 0.9, mt: 0.5 }}>
@@ -360,7 +365,7 @@ export default function LoginPage() {
                   size="small"
                   startIcon={<HelpOutlineIcon fontSize="small" />}
                   sx={{ color: '#56615b', fontSize: '0.75rem', textTransform: 'none' }}
-                  onClick={() => alert('ASF IMS Support Helpline: 051 111 772 772 | Email: helpline@asf.gov.pk')}
+                  onClick={() => alert('ASF IMS Support Helpline: 021- 99242583 | Email: ddproc@asf.gov.pk')}
                 >
                   Help & Support
                 </Button>

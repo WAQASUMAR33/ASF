@@ -5,6 +5,11 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'ASF IMS - Airports Security Force Inventory Management System (Light MUI)',
   description: 'Enterprise Logistics, Demand Entitlement, HQ Consolidation & Central Distribution System',
+  icons: {
+    icon: '/asf_logo.png',
+    shortcut: '/asf_logo.png',
+    apple: '/asf_logo.png',
+  },
 };
 
 export default function RootLayout({
