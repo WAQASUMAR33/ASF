@@ -18,6 +18,7 @@ export default function AsfLogo({ size = 52, showText = true, light = true }: As
         alt="Airports Security Force"
         width={size}
         height={size}
+        unoptimized
         style={{
           width: size,
           height: size,

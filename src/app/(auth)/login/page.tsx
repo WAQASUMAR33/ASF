@@ -30,8 +30,8 @@ import AsfLogo from '@/components/ui/AsfLogo';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState('officer_khi');
-  const [password, setPassword] = useState('ASFPass123!');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [require2FA, setRequire2FA] = useState(false);
